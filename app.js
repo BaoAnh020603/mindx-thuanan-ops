@@ -1,267 +1,13 @@
 /**
  * MindX Thuận An - Sheet-Like Ops Management System Core Logic
- * 4 Interactive Linked Worksheets:
- * 1. Students Sheet (Metrics Cards + Dynamic Status/Class filter)
- * 2. Classes Sheet (Auto capacity calculation >= 6, status)
- * 3. Attendance Sheet (14 sessions, 4 status colors, auto-makeup dispatch)
- * 4. Makeup & Materials Sheet (Make-up rounds 1 & 2, sync from attendance)
+ * Clean slate mode (No preset demo data - ready for full manual input by staff)
+ * No placeholder hints in inputs
  */
 
-// Initial Seed Data for MindX Thuận An
-const INITIAL_CLASSES = [
-  {
-    id: "cls-01",
-    trackCategory: "Coding",
-    classCode: "TA-C4K-GB02-HB",
-    studyFormat: "Offline",
-    schedule: "T7 (17:30 - 19:30)",
-    startDate: "2026-03-07",
-    cp1Date: "2026-04-18",
-    cp2Date: "2026-05-30",
-    demoDate: "2026-06-06",
-    teacher: "Thầy Hoàng Minh",
-    ta: "Cô Kim Ngân",
-    cs: "Chị Thảo CS",
-    status: "Running"
-  },
-  {
-    id: "cls-02",
-    trackCategory: "Coding",
-    classCode: "TA-C4K-GA02-HB",
-    studyFormat: "Offline",
-    schedule: "CN (08:30 - 10:30)",
-    startDate: "2026-03-08",
-    cp1Date: "2026-04-19",
-    cp2Date: "2026-05-31",
-    demoDate: "2026-06-07",
-    teacher: "Thầy Đức Nam",
-    ta: "Thầy Hữu Phước",
-    cs: "Chị Thảo CS",
-    status: "Running"
-  },
-  {
-    id: "cls-03",
-    trackCategory: "Coding",
-    classCode: "TA-C4K-SA03-HB",
-    studyFormat: "Hybrid",
-    schedule: "T7 (14:30 - 16:30)",
-    startDate: "2026-02-21",
-    cp1Date: "2026-04-04",
-    cp2Date: "2026-05-16",
-    demoDate: "2026-05-23",
-    teacher: "Thầy Quang Khải",
-    ta: "Cô Lan Vy",
-    cs: "Chị Hà Vy",
-    status: "Running"
-  },
-  {
-    id: "cls-04",
-    trackCategory: "Robotics",
-    classCode: "TA-ROB-DISC01",
-    studyFormat: "Offline",
-    schedule: "CN (15:00 - 17:00)",
-    startDate: "2026-03-15",
-    cp1Date: "2026-04-26",
-    cp2Date: "2026-06-07",
-    demoDate: "2026-06-14",
-    teacher: "Thầy Tấn Đạt",
-    ta: "Thầy Minh Triết",
-    cs: "Chị Mai Linh",
-    status: "Running"
-  },
-  {
-    id: "cls-05",
-    trackCategory: "Coding",
-    classCode: "TA-INT-WEB01",
-    studyFormat: "Online",
-    schedule: "T3 & T5 (19:00 - 21:00)",
-    startDate: "2026-04-01",
-    cp1Date: "2026-05-10",
-    cp2Date: "2026-06-20",
-    demoDate: "2026-06-30",
-    teacher: "Thầy Thanh Tùng",
-    ta: "Cô Mỹ Duyên",
-    cs: "Chị Hà Vy",
-    status: "Chờ lớp"
-  }
-];
-
-const INITIAL_STUDENTS = [
-  {
-    id: "std-01",
-    fullName: "Nguyễn Gia Bảo",
-    phone: "0908123456",
-    parentName: "Nguyễn Văn Hùng",
-    email: "hung.nguyen@gmail.com",
-    courseTrack: "Code For Kids (C4K)",
-    currentModule: "GB02",
-    trackCategory: "Coding",
-    classCode: "TA-C4K-GB02-HB",
-    studyFormat: "Offline",
-    status: "Active"
-  },
-  {
-    id: "std-02",
-    fullName: "Trần Minh Khang",
-    phone: "0912345678",
-    parentName: "Trần Quốc Toản",
-    email: "toan.tran@gmail.com",
-    courseTrack: "Code For Kids (C4K)",
-    currentModule: "GB02",
-    trackCategory: "Coding",
-    classCode: "TA-C4K-GB02-HB",
-    studyFormat: "Offline",
-    status: "Active"
-  },
-  {
-    id: "std-03",
-    fullName: "Lê Ngọc Anh",
-    phone: "0933998877",
-    parentName: "Phạm Thúy Hằng",
-    email: "thuyhang.le@gmail.com",
-    courseTrack: "Code For Kids (C4K)",
-    currentModule: "GB02",
-    trackCategory: "Coding",
-    classCode: "TA-C4K-GB02-HB",
-    studyFormat: "Offline",
-    status: "Sắp hết phí"
-  },
-  {
-    id: "std-04",
-    fullName: "Võ Hoàng Nam",
-    phone: "0977881122",
-    parentName: "Võ Văn Kiệt",
-    email: "kiet.vo@gmail.com",
-    courseTrack: "Code For Kids (C4K)",
-    currentModule: "GB02",
-    trackCategory: "Coding",
-    classCode: "TA-C4K-GB02-HB",
-    studyFormat: "Offline",
-    status: "Active"
-  },
-  {
-    id: "std-05",
-    fullName: "Phạm Đăng Khoa",
-    phone: "0988665544",
-    parentName: "Đỗ Bích Thủy",
-    email: "bichthuy.pham@gmail.com",
-    courseTrack: "Code For Kids (C4K)",
-    currentModule: "GB02",
-    trackCategory: "Coding",
-    classCode: "TA-C4K-GB02-HB",
-    studyFormat: "Offline",
-    status: "Active"
-  },
-  {
-    id: "std-06",
-    fullName: "Bùi Thị Mai Hương",
-    phone: "0918776655",
-    parentName: "Bùi Văn Thành",
-    email: "thanh.bui@gmail.com",
-    courseTrack: "Code For Kids (C4K)",
-    currentModule: "GB02",
-    trackCategory: "Coding",
-    classCode: "TA-C4K-GB02-HB",
-    studyFormat: "Offline",
-    status: "Active"
-  },
-  {
-    id: "std-07",
-    fullName: "Đỗ Minh Quân",
-    phone: "0944556677",
-    parentName: "Nguyễn Thảo Nguyên",
-    email: "thaonguyen.do@gmail.com",
-    courseTrack: "Code For Kids (C4K)",
-    currentModule: "GA02",
-    trackCategory: "Coding",
-    classCode: "TA-C4K-GA02-HB",
-    studyFormat: "Offline",
-    status: "Active"
-  },
-  {
-    id: "std-08",
-    fullName: "Huỳnh Quốc Bảo",
-    phone: "0934112233",
-    parentName: "Huỳnh Tấn Phát",
-    email: "phat.huynh@gmail.com",
-    courseTrack: "Code For Kids (C4K)",
-    currentModule: "GA02",
-    trackCategory: "Coding",
-    classCode: "TA-C4K-GA02-HB",
-    studyFormat: "Offline",
-    status: "Handle"
-  },
-  {
-    id: "std-09",
-    fullName: "Vũ Hải Đăng",
-    phone: "0909887766",
-    parentName: "Vũ Thành Công",
-    email: "cong.vu@gmail.com",
-    courseTrack: "Robotics Discovery",
-    currentModule: "M1-Makers",
-    trackCategory: "Robotics",
-    classCode: "TA-ROB-DISC01",
-    studyFormat: "Offline",
-    status: "Active"
-  },
-  {
-    id: "std-10",
-    fullName: "Lý Gia Hân",
-    phone: "0919223344",
-    parentName: "Trần Kim Loan",
-    email: "loan.tran@gmail.com",
-    courseTrack: "Code For Kids (C4K)",
-    currentModule: "SA03",
-    trackCategory: "Coding",
-    classCode: "TA-C4K-SA03-HB",
-    studyFormat: "Hybrid",
-    status: "Bảo lưu"
-  },
-  {
-    id: "std-11",
-    fullName: "Nguyễn Tuấn Kiệt",
-    phone: "0903332211",
-    parentName: "Lê Phương Thảo",
-    email: "thao.le@gmail.com",
-    courseTrack: "Fullstack Web",
-    currentModule: "ReactJS",
-    trackCategory: "Coding",
-    classCode: "TA-INT-WEB01",
-    studyFormat: "Online",
-    status: "Sắp hết phí"
-  },
-  {
-    id: "std-12",
-    fullName: "Dương Thế Vinh",
-    phone: "0982233445",
-    parentName: "Dương Minh Trí",
-    email: "tri.duong@gmail.com",
-    courseTrack: "Code For Kids (C4K)",
-    currentModule: "GA02",
-    trackCategory: "Coding",
-    classCode: "TA-C4K-GA02-HB",
-    studyFormat: "Offline",
-    status: "Nghỉ ngang"
-  }
-];
-
-// Initial Attendance Records: key `${classCode}__${studentId}__${sessionNum}`
-const INITIAL_ATTENDANCE = {
-  // TA-C4K-GB02-HB
-  "TA-C4K-GB02-HB__std-01__1": "P",
-  "TA-C4K-GB02-HB__std-01__2": "P",
-  "TA-C4K-GB02-HB__std-01__3": "L",
-  "TA-C4K-GB02-HB__std-02__1": "P",
-  "TA-C4K-GB02-HB__std-02__2": "A", // Vắng không phép -> Tạo học bù
-  "TA-C4K-GB02-HB__std-02__3": "P",
-  "TA-C4K-GB02-HB__std-03__1": "P",
-  "TA-C4K-GB02-HB__std-03__2": "E", // Vắng có phép -> Tạo học bù
-  "TA-C4K-GB02-HB__std-03__3": "P",
-  "TA-C4K-GB02-HB__std-04__1": "P",
-  "TA-C4K-GB02-HB__std-04__2": "P",
-  "TA-C4K-GB02-HB__std-05__1": "P",
-  "TA-C4K-GB02-HB__std-06__1": "P"
-};
+// Blank initial datasets
+const INITIAL_CLASSES = [];
+const INITIAL_STUDENTS = [];
+const INITIAL_ATTENDANCE = {};
 
 // State Store
 class Store {
@@ -292,12 +38,11 @@ class Store {
     localStorage.setItem("mx_ta_makeup", JSON.stringify(this.makeup));
   }
 
-  resetDemo() {
-    this.classes = JSON.parse(JSON.stringify(INITIAL_CLASSES));
-    this.students = JSON.parse(JSON.stringify(INITIAL_STUDENTS));
-    this.attendance = JSON.parse(JSON.stringify(INITIAL_ATTENDANCE));
+  clearAll() {
+    this.classes = [];
+    this.students = [];
+    this.attendance = {};
     this.makeup = [];
-    this.syncMakeupFromAttendance();
     this.save();
   }
 
@@ -315,8 +60,7 @@ class Store {
 
   // Synchronize attendance absences (A or E) to makeup records
   syncMakeupFromAttendance() {
-    // Collect all absences per student and class
-    const absencesMap = {}; // key: `${classCode}__${studentId}` -> Array of { session, status }
+    const absencesMap = {};
 
     for (const [key, val] of Object.entries(this.attendance)) {
       if (val === "A" || val === "E") {
@@ -341,7 +85,6 @@ class Store {
       const student = this.students.find(s => s.id === studentId);
       if (!student) continue;
 
-      // Sort by session
       absList.sort((a, b) => a.session - b.session);
 
       let record = this.makeup.find(m => m.studentId === studentId && m.classCode === classCode);
@@ -363,7 +106,6 @@ class Store {
         };
         this.makeup.push(record);
       } else {
-        // Update absent dates if needed
         record.studentName = student.fullName;
         if (!record.absent1Date) {
           record.absent1Date = `Buổi ${absList[0].session} (${absList[0].type})`;
@@ -405,7 +147,7 @@ class App {
     this.btnExportExcel = document.getElementById("btn-export-excel");
     this.btnImportExcel = document.getElementById("btn-import-excel");
     this.fileImport = document.getElementById("file-import");
-    this.btnResetDemo = document.getElementById("btn-reset-demo");
+    this.btnClearAll = document.getElementById("btn-clear-all");
 
     // Students filter
     this.searchStudent = document.getElementById("search-student");
@@ -462,12 +204,12 @@ class App {
       }
     });
 
-    // Reset demo data
-    this.btnResetDemo.addEventListener("click", () => {
-      if (confirm("Bạn có chắc chắn muốn nạp lại dữ liệu mẫu Thuận An không? Dữ liệu hiện tại sẽ được thay bằng bộ mẫu ban đầu.")) {
-        this.store.resetDemo();
+    // Clear all tables to start 100% fresh
+    this.btnClearAll.addEventListener("click", () => {
+      if (confirm("Chị có chắc chắn muốn xóa trắng tất cả dữ liệu để nhập lại từ đầu không?")) {
+        this.store.clearAll();
         this.render();
-        this.showToast("Đã nạp lại dữ liệu mẫu cơ sở Thuận An thành công!");
+        this.showToast("Đã xóa trắng dữ liệu. Chị có thể bắt đầu nhập mới!");
       }
     });
 
@@ -544,7 +286,6 @@ class App {
       this.btnAddRow.style.display = "none";
     }
 
-    // Refresh icons
     if (window.lucide) {
       window.lucide.createIcons();
     }
@@ -577,15 +318,22 @@ class App {
 
     // Student modal class select
     const modalStdClass = document.getElementById("student-classCode");
-    modalStdClass.innerHTML = classCodes.map(code => `<option value="${code}">${code}</option>`).join("");
+    if (classCodes.length > 0) {
+      modalStdClass.innerHTML = classCodes.map(code => `<option value="${code}">${code}</option>`).join("");
+    } else {
+      modalStdClass.innerHTML = `<option value="">(Chưa tạo lớp - vui lòng tạo lớp trước)</option>`;
+    }
 
     // Attendance class selector
     if (!classCodes.includes(this.selectedAttendanceClass) && classCodes.length > 0) {
       this.selectedAttendanceClass = classCodes[0];
+    } else if (classCodes.length === 0) {
+      this.selectedAttendanceClass = "";
     }
-    this.selectAttendanceClass.innerHTML = classCodes.map(code =>
-      `<option value="${code}" ${code === this.selectedAttendanceClass ? 'selected' : ''}>${code}</option>`
-    ).join("");
+
+    this.selectAttendanceClass.innerHTML = classCodes.length > 0
+      ? classCodes.map(code => `<option value="${code}" ${code === this.selectedAttendanceClass ? 'selected' : ''}>${code}</option>`).join("")
+      : `<option value="">(Chưa có lớp nào)</option>`;
 
     // Makeup class filter
     const curMkFilter = this.filterMakeupClass.value;
@@ -600,14 +348,13 @@ class App {
     const trackFilter = this.filterStudentTrack.value;
     const classFilter = this.filterStudentClass.value;
 
-    // Filter students
     const filtered = this.store.students.filter(s => {
       const matchQuery = !query ||
         s.fullName.toLowerCase().includes(query) ||
         (s.phone && s.phone.includes(query)) ||
         (s.parentName && s.parentName.toLowerCase().includes(query)) ||
         (s.email && s.email.toLowerCase().includes(query)) ||
-        s.classCode.toLowerCase().includes(query);
+        (s.classCode && s.classCode.toLowerCase().includes(query));
 
       const matchStatus = !statusFilter || s.status === statusFilter;
       const matchTrack = !trackFilter || s.trackCategory === trackFilter;
@@ -637,20 +384,18 @@ class App {
 
     this.studentsTableCount.textContent = `Hiển thị ${filtered.length} / ${total} học viên`;
 
-    // Render Table rows
     if (filtered.length === 0) {
-      this.tbodyStudents.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 30px; color: #94a3b8;">Không tìm thấy học viên nào phù hợp với bộ lọc.</td></tr>`;
+      this.tbodyStudents.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 40px; color: #64748b; font-weight:600;">Chưa có dữ liệu học viên. Chị Vy bấm nút <b>"Thêm Học Viên"</b> ở góc trên bên phải để bắt đầu nhập.</td></tr>`;
       return;
     }
 
     this.tbodyStudents.innerHTML = filtered.map((s, idx) => {
-      const statusBadge = this.getStatusBadge(s.status);
       const trackBadge = s.trackCategory === "Coding" ? "badge-coding" : "badge-robotics";
       return `
         <tr data-student-id="${s.id}">
           <td class="col-num sticky-col">${idx + 1}</td>
           <td class="col-name sticky-col">
-            <span class="cell-editable" title="Bấm để chỉnh sửa nhanh" onclick="app.editStudentName('${s.id}')">${s.fullName}</span>
+            <span class="cell-editable" title="Bấm để sửa nhanh họ tên" onclick="app.editStudentName('${s.id}')">${s.fullName}</span>
           </td>
           <td>${s.phone || '-'}</td>
           <td>${s.parentName || '-'}</td>
@@ -658,10 +403,10 @@ class App {
           <td>${s.courseTrack || '-'}</td>
           <td><strong>${s.currentModule || '-'}</strong></td>
           <td><span class="badge ${trackBadge}">${s.trackCategory}</span></td>
-          <td><code>${s.classCode}</code></td>
+          <td><code>${s.classCode || '-'}</code></td>
           <td>${s.studyFormat}</td>
           <td>
-            <select class="filter-select" style="padding: 2px 6px; font-weight:600;" onchange="app.changeStudentStatus('${s.id}', this.value)">
+            <select class="filter-select" style="padding: 2px 6px; font-weight:700;" onchange="app.changeStudentStatus('${s.id}', this.value)">
               <option value="Active" ${s.status === 'Active' ? 'selected' : ''}>Active</option>
               <option value="Sắp hết phí" ${s.status === 'Sắp hết phí' ? 'selected' : ''}>Sắp hết phí</option>
               <option value="Handle" ${s.status === 'Handle' ? 'selected' : ''}>Handle</option>
@@ -673,7 +418,7 @@ class App {
           </td>
           <td class="col-actions">
             <div class="row-actions">
-              <button class="btn-icon" title="Sửa chi tiết" onclick="app.openStudentModal('${s.id}')"><i data-lucide="edit-3"></i></button>
+              <button class="btn-icon" title="Sửa thông tin" onclick="app.openStudentModal('${s.id}')"><i data-lucide="edit-3"></i></button>
               <button class="btn-icon btn-delete" title="Xóa học viên" onclick="app.deleteStudent('${s.id}')"><i data-lucide="trash-2"></i></button>
             </div>
           </td>
@@ -684,27 +429,14 @@ class App {
     if (window.lucide) window.lucide.createIcons();
   }
 
-  getStatusBadge(status) {
-    switch (status) {
-      case "Active": return `<span class="badge badge-active">Active</span>`;
-      case "Sắp hết phí": return `<span class="badge badge-expiring">Sắp hết phí</span>`;
-      case "Handle": return `<span class="badge badge-handle">Handle</span>`;
-      case "Bảo lưu": return `<span class="badge badge-reserve">Bảo lưu</span>`;
-      case "Chuyển cơ sở": return `<span class="badge badge-transfer">Chuyển cơ sở</span>`;
-      case "Chuyển nhượng": return `<span class="badge badge-transfer">Chuyển nhượng</span>`;
-      case "Nghỉ ngang": return `<span class="badge badge-drop">Nghỉ ngang</span>`;
-      default: return `<span class="badge">${status}</span>`;
-    }
-  }
-
   changeStudentStatus(studentId, newStatus) {
     const student = this.store.students.find(s => s.id === studentId);
     if (student) {
       student.status = newStatus;
       this.store.save();
       this.renderStudents();
-      this.renderClasses(); // Refresh class capacity
-      this.showToast(`Đã cập nhật trạng thái học viên: ${student.fullName} -> ${newStatus}`);
+      this.renderClasses();
+      this.showToast(`Đã cập nhật trạng thái: ${student.fullName} -> ${newStatus}`);
     }
   }
 
@@ -718,7 +450,7 @@ class App {
       this.renderStudents();
       this.renderAttendance();
       this.renderMakeup();
-      this.showToast("Đã cập nhật tên học viên!");
+      this.showToast("Đã cập nhật họ tên học viên!");
     }
   }
 
@@ -726,6 +458,14 @@ class App {
     const title = document.getElementById("modal-student-title");
     const form = this.formStudent;
     form.reset();
+
+    if (this.store.classes.length === 0) {
+      if (confirm("Hiện chưa có lớp học nào trong hệ thống. Chị có muốn tạo lớp học trước không?")) {
+        this.switchTab("classes");
+        this.openClassModal();
+        return;
+      }
+    }
 
     if (studentId) {
       const s = this.store.students.find(item => item.id === studentId);
@@ -767,14 +507,12 @@ class App {
     };
 
     if (id) {
-      // Edit existing
       const index = this.store.students.findIndex(s => s.id === id);
       if (index !== -1) {
         this.store.students[index] = { ...this.store.students[index], ...studentData };
         this.showToast("Cập nhật học viên thành công!");
       }
     } else {
-      // Create new
       const newStudent = {
         id: "std-" + Date.now(),
         ...studentData
@@ -791,7 +529,7 @@ class App {
   deleteStudent(id) {
     const student = this.store.students.find(s => s.id === id);
     if (!student) return;
-    if (confirm(`Bạn có chắc muốn xóa học viên "${student.fullName}" không?`)) {
+    if (confirm(`Chị có chắc muốn xóa học viên "${student.fullName}" không?`)) {
       this.store.students = this.store.students.filter(s => s.id !== id);
       this.store.save();
       this.render();
@@ -825,7 +563,6 @@ class App {
       return matchQuery && matchStatus && matchTrack && matchCapacity;
     });
 
-    // Update Summary Metrics for Classes
     const total = this.store.classes.length;
     const running = this.store.classes.filter(c => c.status === "Running").length;
     const pending = this.store.classes.filter(c => c.status === "Chờ lớp").length;
@@ -843,7 +580,7 @@ class App {
     this.classesTableCount.textContent = `Hiển thị ${filtered.length} / ${total} lớp`;
 
     if (filtered.length === 0) {
-      this.tbodyClasses.innerHTML = `<tr><td colspan="15" style="text-align: center; padding: 30px; color: #94a3b8;">Không tìm thấy lớp học nào phù hợp.</td></tr>`;
+      this.tbodyClasses.innerHTML = `<tr><td colspan="15" style="text-align: center; padding: 40px; color: #64748b; font-weight:600;">Chưa có lớp học nào trong hệ thống. Chị Vy bấm nút <b>"Thêm Lớp Học"</b> để bắt đầu tạo lớp.</td></tr>`;
       return;
     }
 
@@ -855,9 +592,6 @@ class App {
         : `<span class="badge badge-low">Thiếu sĩ số (${activeCount}/6)</span>`;
 
       const trackBadge = c.trackCategory === "Coding" ? "badge-coding" : "badge-robotics";
-      const statusBadge = c.status === "Running"
-        ? `<span class="badge badge-running">Running</span>`
-        : (c.status === "Chờ lớp" ? `<span class="badge badge-pending">Chờ lớp</span>` : `<span class="badge badge-finished">Finished</span>`);
 
       return `
         <tr data-class-code="${c.classCode}">
@@ -967,9 +701,8 @@ class App {
         this.showToast("Cập nhật thông tin lớp học thành công!");
       }
     } else {
-      // Check duplicate classCode
       if (this.store.classes.some(c => c.classCode === classData.classCode)) {
-        alert(`Mã lớp "${classData.classCode}" đã tồn tại! Vui lòng chọn mã khác.`);
+        alert(`Mã lớp "${classData.classCode}" đã tồn tại! Vui lòng nhập mã lớp khác.`);
         return;
       }
       const newClass = {
@@ -988,7 +721,7 @@ class App {
   deleteClass(classId) {
     const cls = this.store.classes.find(c => c.id === classId);
     if (!cls) return;
-    if (confirm(`Bạn có chắc muốn xóa lớp "${cls.classCode}" không?`)) {
+    if (confirm(`Chị có chắc muốn xóa lớp "${cls.classCode}" không?`)) {
       this.store.classes = this.store.classes.filter(c => c.id !== classId);
       this.store.save();
       this.render();
@@ -1001,7 +734,6 @@ class App {
     const classCode = this.selectedAttendanceClass;
     const curClass = this.store.classes.find(c => c.classCode === classCode);
 
-    // Render Class meta header
     if (curClass) {
       const activeCount = this.store.getClassActiveCount(classCode);
       this.attendanceClassInfo.innerHTML = `
@@ -1016,21 +748,30 @@ class App {
       this.attendanceClassInfo.innerHTML = "";
     }
 
-    // Get students of this class
-    const classStudents = this.store.students.filter(s => s.classCode === classCode);
-
-    if (classStudents.length === 0) {
+    if (!classCode) {
       this.tbodyAttendance.innerHTML = `
         <tr>
-          <td colspan="18" style="text-align: center; padding: 40px; color: #94a3b8;">
-            Lớp <b>${classCode}</b> hiện chưa có học viên nào. Vui lòng thêm học viên ở Tab 1.
+          <td colspan="18" style="text-align: center; padding: 40px; color: #64748b; font-weight:600;">
+            Chưa có lớp nào được chọn. Chị Vy vui lòng tạo lớp học ở Tab 2 trước.
           </td>
         </tr>
       `;
       return;
     }
 
-    // Render Attendance Rows
+    const classStudents = this.store.students.filter(s => s.classCode === classCode);
+
+    if (classStudents.length === 0) {
+      this.tbodyAttendance.innerHTML = `
+        <tr>
+          <td colspan="18" style="text-align: center; padding: 40px; color: #64748b; font-weight:600;">
+            Lớp <b>${classCode}</b> hiện chưa có học viên nào. Chị Vy qua Tab 1 để thêm học viên vào lớp này nhé.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
     this.tbodyAttendance.innerHTML = classStudents.map((s, idx) => {
       let absentCount = 0;
       let sessionCells = "";
@@ -1059,7 +800,7 @@ class App {
         }
 
         sessionCells += `
-          <td class="att-cell ${cellClass}" title="Bấm để chuyển trạng thái (Có mặt / Trễ / Vắng không phép / Có phép / Trống)"
+          <td class="att-cell ${cellClass}" title="Bấm để chuyển: Có mặt -> Đi trễ -> Vắng ko phép -> Vắng có phép -> Trống"
               onclick="app.cycleAttendanceState('${classCode}', '${s.id}', ${sess})">
             ${cellText}
           </td>
@@ -1082,7 +823,6 @@ class App {
     }).join("");
   }
 
-  // Cycle Attendance status on cell click: Empty -> P -> L -> A -> E -> Empty
   cycleAttendanceState(classCode, studentId, session) {
     const key = this.store.getAttKey(classCode, studentId, session);
     const curState = this.store.attendance[key] || "";
@@ -1100,21 +840,19 @@ class App {
       delete this.store.attendance[key];
     }
 
-    // Auto synchronize to makeup tab when status is A or E
     this.store.syncMakeupFromAttendance();
     this.store.save();
 
     this.renderAttendance();
     this.renderMakeup();
 
-    // Tab badge
     document.getElementById("badge-makeup-count").textContent = this.store.makeup.length;
 
     const student = this.store.students.find(s => s.id === studentId);
     const label = nextState === "P" ? "Có mặt (P)" :
                   nextState === "L" ? "Đi trễ (L)" :
-                  nextState === "A" ? "Vắng không phép (A) -> Đã đồng bộ sang Học bù!" :
-                  nextState === "E" ? "Vắng có phép (E) -> Đã đồng bộ sang Học bù!" : "Đã xóa điểm danh";
+                  nextState === "A" ? "Vắng không phép (A) -> Đã chuyển sang Học Bù!" :
+                  nextState === "E" ? "Vắng có phép (E) -> Đã chuyển sang Học Bù!" : "Đã xóa";
 
     this.showToast(`${student ? student.fullName : 'Học viên'} (Buổi ${session}): ${label}`);
   }
@@ -1147,8 +885,8 @@ class App {
     if (filtered.length === 0) {
       this.tbodyMakeup.innerHTML = `
         <tr>
-          <td colspan="12" style="text-align: center; padding: 40px; color: #94a3b8;">
-            Hiện không có lịch học bù nào cần xử lý. Khi điểm danh tích vắng (🔴 hoặc 🔵), hệ thống sẽ tự động tạo bản ghi tại đây.
+          <td colspan="12" style="text-align: center; padding: 40px; color: #64748b; font-weight:600;">
+            Chưa có buổi học bù nào cần xếp lịch. Khi điểm danh ở Tab 3 tích vắng (🔴 hoặc 🔵), hệ thống sẽ tự động tạo bản ghi tại đây.
           </td>
         </tr>
       `;
@@ -1168,14 +906,14 @@ class App {
           </td>
           <td class="checkbox-center">
             <input type="checkbox" class="custom-checkbox" ${m.absent1SentDoc ? 'checked' : ''}
-              onchange="app.toggleMakeupDoc('${m.id}', 1, this.checked)" title="Đã gửi slide/tài liệu buổi học bù">
+              onchange="app.toggleMakeupDoc('${m.id}', 1, this.checked)">
           </td>
           <td>
             <input type="text" class="filter-select" style="width: 170px;" value="${m.absent1Schedule || ''}"
-              placeholder="VD: CN (17:30 - Lớp GB03)" onchange="app.updateMakeupSchedule('${m.id}', 1, this.value)">
+              onchange="app.updateMakeupSchedule('${m.id}', 1, this.value)">
           </td>
           <td>
-            <select class="filter-select" style="font-weight:600;" onchange="app.changeMakeupStatus('${m.id}', 1, this.value)">
+            <select class="filter-select" style="font-weight:700;" onchange="app.changeMakeupStatus('${m.id}', 1, this.value)">
               <option value="Chưa bù" ${m.absent1Status === 'Chưa bù' ? 'selected' : ''}>Chưa bù</option>
               <option value="Đã bù" ${m.absent1Status === 'Đã bù' ? 'selected' : ''}>Đã bù</option>
               <option value="Hủy bù" ${m.absent1Status === 'Hủy bù' ? 'selected' : ''}>Hủy bù</option>
@@ -1189,18 +927,18 @@ class App {
           <td class="checkbox-center">
             ${m.absent2Date ? `
               <input type="checkbox" class="custom-checkbox" ${m.absent2SentDoc ? 'checked' : ''}
-                onchange="app.toggleMakeupDoc('${m.id}', 2, this.checked)" title="Đã gửi slide/tài liệu đợt 2">
+                onchange="app.toggleMakeupDoc('${m.id}', 2, this.checked)">
             ` : '<span style="color:#cbd5e1;">-</span>'}
           </td>
           <td>
             ${m.absent2Date ? `
               <input type="text" class="filter-select" style="width: 170px;" value="${m.absent2Schedule || ''}"
-                placeholder="VD: T7 (19:30 - Thầy Minh)" onchange="app.updateMakeupSchedule('${m.id}', 2, this.value)">
+                onchange="app.updateMakeupSchedule('${m.id}', 2, this.value)">
             ` : '<span style="color:#cbd5e1;">-</span>'}
           </td>
           <td>
             ${m.absent2Date ? `
-              <select class="filter-select" style="font-weight:600;" onchange="app.changeMakeupStatus('${m.id}', 2, this.value)">
+              <select class="filter-select" style="font-weight:700;" onchange="app.changeMakeupStatus('${m.id}', 2, this.value)">
                 <option value="Chưa bù" ${m.absent2Status === 'Chưa bù' ? 'selected' : ''}>Chưa bù</option>
                 <option value="Đã bù" ${m.absent2Status === 'Đã bù' ? 'selected' : ''}>Đã bù</option>
                 <option value="Hủy bù" ${m.absent2Status === 'Hủy bù' ? 'selected' : ''}>Hủy bù</option>
@@ -1211,7 +949,7 @@ class App {
           <!-- Notes -->
           <td>
             <input type="text" class="filter-select" style="width: 220px;" value="${m.csNotes || ''}"
-              placeholder="Ghi chú CS/GV..." onchange="app.updateMakeupNotes('${m.id}', this.value)">
+              onchange="app.updateMakeupNotes('${m.id}', this.value)">
           </td>
 
           <!-- Actions -->
@@ -1233,7 +971,7 @@ class App {
       if (round === 1) item.absent1SentDoc = checked;
       if (round === 2) item.absent2SentDoc = checked;
       this.store.save();
-      this.showToast(`Đã cập nhật trạng thái gửi tài liệu đợt ${round}: ${checked ? 'Đã gửi' : 'Chưa gửi'}`);
+      this.showToast(`Đã lưu trạng thái gửi tài liệu đợt ${round}`);
     }
   }
 
@@ -1243,7 +981,7 @@ class App {
       if (round === 1) item.absent1Schedule = value;
       if (round === 2) item.absent2Schedule = value;
       this.store.save();
-      this.showToast(`Đã lưu lịch xếp học bù đợt ${round}`);
+      this.showToast(`Đã lưu lịch bù đợt ${round}`);
     }
   }
 
@@ -1266,7 +1004,7 @@ class App {
   }
 
   deleteMakeup(id) {
-    if (confirm("Bạn có chắc muốn xóa bản ghi theo dõi học bù này không?")) {
+    if (confirm("Chị có chắc muốn xóa bản ghi theo dõi học bù này không?")) {
       this.store.makeup = this.store.makeup.filter(m => m.id !== id);
       this.store.save();
       this.renderMakeup();
@@ -1278,14 +1016,14 @@ class App {
   openAddMakeupRecord() {
     const studentName = prompt("Nhập tên học viên cần xếp học bù:");
     if (!studentName) return;
-    const classCode = prompt("Nhập mã lớp của học viên (ví dụ: TA-C4K-GB02-HB):", this.store.classes[0]?.classCode || "");
-    const absentReason = prompt("Ngày vắng hoặc lý do vắng lần 1 (ví dụ: Buổi 3 ngày 21/03):", "Buổi 1");
+    const classCode = prompt("Nhập mã lớp của học viên:", this.store.classes[0]?.classCode || "");
+    const absentReason = prompt("Ngày vắng hoặc lý do vắng lần 1:", "Buổi 1");
 
     const newRec = {
       id: "mk-" + Date.now(),
       studentId: "manual-" + Date.now(),
       studentName: studentName.trim(),
-      classCode: classCode.trim(),
+      classCode: classCode ? classCode.trim() : "",
       absent1Date: absentReason || "Buổi 1",
       absent1SentDoc: false,
       absent1Schedule: "",
@@ -1294,14 +1032,14 @@ class App {
       absent2SentDoc: false,
       absent2Schedule: "",
       absent2Status: "",
-      csNotes: "Thêm thủ công"
+      csNotes: ""
     };
 
     this.store.makeup.unshift(newRec);
     this.store.save();
     this.renderMakeup();
     document.getElementById("badge-makeup-count").textContent = this.store.makeup.length;
-    this.showToast("Đã thêm bản ghi theo dõi học bù!");
+    this.showToast("Đã thêm bản ghi học bù!");
   }
 
   // ================= EXPORT & IMPORT =================
@@ -1313,7 +1051,6 @@ class App {
 
     const wb = XLSX.utils.book_new();
 
-    // Sheet 1: Học viên
     const wsStudentsData = this.store.students.map((s, idx) => ({
       "STT": idx + 1,
       "Họ và tên học viên": s.fullName,
@@ -1330,7 +1067,6 @@ class App {
     const wsStudents = XLSX.utils.json_to_sheet(wsStudentsData);
     XLSX.utils.book_append_sheet(wb, wsStudents, "Danh sách học viên");
 
-    // Sheet 2: Danh sách lớp
     const wsClassesData = this.store.classes.map((c, idx) => {
       const activeCount = this.store.getClassActiveCount(c.classCode);
       return {
@@ -1354,7 +1090,6 @@ class App {
     const wsClasses = XLSX.utils.json_to_sheet(wsClassesData);
     XLSX.utils.book_append_sheet(wb, wsClasses, "Danh sách lớp học");
 
-    // Sheet 3: Học bù
     const wsMakeupData = this.store.makeup.map((m, idx) => ({
       "STT": idx + 1,
       "Tên học viên": m.studentName,
@@ -1393,17 +1128,16 @@ class App {
             if (parsed.makeup) this.store.makeup = parsed.makeup;
             this.store.save();
             this.render();
-            this.showToast("Nhập dữ liệu JSON thành công!");
+            this.showToast("Nhập dữ liệu thành công!");
           } else {
             alert("Định dạng file JSON không hợp lệ.");
           }
         } catch (err) {
-          alert("Lỗi khi đọc file JSON: " + err.message);
+          alert("Lỗi khi đọc file: " + err.message);
         }
       };
       reader.readAsText(file);
     } else {
-      // Excel file
       const reader = new FileReader();
       reader.onload = (event) => {
         try {
@@ -1423,8 +1157,18 @@ class App {
   }
 }
 
+// Clear any existing localStorage mock demo if it came from the initial demo template
+try {
+  const existingClasses = localStorage.getItem("mx_ta_classes");
+  if (existingClasses && existingClasses.includes("TA-C4K-GB02-HB")) {
+    localStorage.removeItem("mx_ta_classes");
+    localStorage.removeItem("mx_ta_students");
+    localStorage.removeItem("mx_ta_attendance");
+    localStorage.removeItem("mx_ta_makeup");
+  }
+} catch(e) {}
+
 // Instantiate on DOM load
 window.addEventListener("DOMContentLoaded", () => {
   window.app = new App();
 });
-

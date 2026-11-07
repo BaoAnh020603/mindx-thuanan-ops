@@ -44,8 +44,8 @@
             <i data-lucide="upload"></i> Nhập Dữ Liệu
           </button>
           <input type="file" id="file-import" accept=".xlsx, .json" style="display: none;">
-          <button id="btn-reset-demo" class="btn btn-outline" title="Nạp lại bộ dữ liệu mẫu cơ sở Thuận An">
-            <i data-lucide="rotate-ccw"></i> Nạp Demo
+          <button id="btn-clear-all" class="btn btn-outline" title="Xóa toàn bộ để làm mới bảng nhập liệu">
+            <i data-lucide="trash-2"></i> Xóa Trắng Bảng
           </button>
           <button id="btn-add-row" class="btn btn-primary">
             <i data-lucide="plus-circle"></i> <span id="add-btn-text">Thêm Học Viên</span>
@@ -137,7 +137,7 @@
           <div class="toolbar-left">
             <div class="search-box">
               <i data-lucide="search"></i>
-              <input type="text" id="search-student" placeholder="Tìm theo tên học viên, phụ huynh, SĐT, mã lớp...">
+              <input type="text" id="search-student">
             </div>
             <div class="filter-group">
               <select id="filter-student-status" class="filter-select">
@@ -234,7 +234,7 @@
           <div class="toolbar-left">
             <div class="search-box">
               <i data-lucide="search"></i>
-              <input type="text" id="search-class" placeholder="Tìm kiếm theo mã lớp, giáo viên, trợ giảng, CS...">
+              <input type="text" id="search-class">
             </div>
             <div class="filter-group">
               <select id="filter-class-status" class="filter-select">
@@ -351,7 +351,7 @@
           <div class="toolbar-left">
             <div class="search-box">
               <i data-lucide="search"></i>
-              <input type="text" id="search-makeup" placeholder="Tìm theo tên học viên, mã lớp, trạng thái bù...">
+              <input type="text" id="search-makeup">
             </div>
             <div class="filter-group">
               <select id="filter-makeup-class" class="filter-select">
@@ -416,19 +416,19 @@
             <input type="hidden" id="student-id">
             <div class="form-group col-span-2">
               <label>Họ và tên học viên *</label>
-              <input type="text" id="student-fullName" required placeholder="Ví dụ: Nguyễn Gia Bảo">
+              <input type="text" id="student-fullName" required>
             </div>
             <div class="form-group">
               <label>Số điện thoại học viên</label>
-              <input type="text" id="student-phone" placeholder="Ví dụ: 0908123456">
+              <input type="text" id="student-phone">
             </div>
             <div class="form-group">
               <label>Họ tên phụ huynh</label>
-              <input type="text" id="student-parentName" placeholder="Ví dụ: Nguyễn Văn Hùng">
+              <input type="text" id="student-parentName">
             </div>
             <div class="form-group">
               <label>Email liên hệ</label>
-              <input type="email" id="student-email" placeholder="Ví dụ: phuhuynh@gmail.com">
+              <input type="email" id="student-email">
             </div>
             <div class="form-group">
               <label>Khối học *</label>
@@ -440,16 +440,16 @@
             <div class="form-group">
               <label>Mã lớp *</label>
               <select id="student-classCode" required>
-                <!-- Populated dynamically -->
+                <!-- Populated dynamically or allow manual input if no class created yet -->
               </select>
             </div>
             <div class="form-group">
               <label>Lộ trình đăng ký</label>
-              <input type="text" id="student-courseTrack" placeholder="Ví dụ: Code For Kids (C4K)">
+              <input type="text" id="student-courseTrack">
             </div>
             <div class="form-group">
               <label>Học phần</label>
-              <input type="text" id="student-currentModule" placeholder="Ví dụ: GB02, GA01, Python 1...">
+              <input type="text" id="student-currentModule">
             </div>
             <div class="form-group">
               <label>Hình thức học *</label>
@@ -498,7 +498,7 @@
             </div>
             <div class="form-group">
               <label>Mã lớp (Định danh duy nhất) *</label>
-              <input type="text" id="class-classCode" required placeholder="Ví dụ: TA-C4K-GB02-HB">
+              <input type="text" id="class-classCode" required>
             </div>
             <div class="form-group">
               <label>Mô hình học *</label>
@@ -510,7 +510,7 @@
             </div>
             <div class="form-group">
               <label>Lịch học (Thứ, Ca giờ) *</label>
-              <input type="text" id="class-schedule" required placeholder="Ví dụ: T7 (17:30 - 19:30)">
+              <input type="text" id="class-schedule" required>
             </div>
             <div class="form-group">
               <label>Ngày khai giảng</label>
@@ -530,15 +530,15 @@
             </div>
             <div class="form-group">
               <label>Giáo viên phụ trách</label>
-              <input type="text" id="class-teacher" placeholder="Ví dụ: Thầy Hoàng Minh">
+              <input type="text" id="class-teacher">
             </div>
             <div class="form-group">
               <label>Trợ giảng (TA)</label>
-              <input type="text" id="class-ta" placeholder="Ví dụ: Cô Kim Ngân">
+              <input type="text" id="class-ta">
             </div>
             <div class="form-group">
               <label>CS phụ trách</label>
-              <input type="text" id="class-cs" placeholder="Ví dụ: Chị Thảo CS">
+              <input type="text" id="class-cs">
             </div>
             <div class="form-group">
               <label>Tình trạng lớp *</label>
