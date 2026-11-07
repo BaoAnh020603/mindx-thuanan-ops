@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindX Thuận An - Hệ Thống Quản Lý Vận Hành Cơ Sở</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- SheetJS for Export/Import Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header bar -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="brand-badge">
+          <span class="brand-mindx">Mind<span class="brand-x">X</span></span>
+          <span class="brand-branch">Thuận An Ops</span>
+        </div>
+        <div class="system-tag">Hệ Thống Quản Lý Vận Hành Lớp Học & Học Viên</div>
+      </div>
+      <div class="header-right">
+        <div class="quick-actions">
+          <button id="btn-export-excel" class="btn btn-secondary">
+            <i data-lucide="download"></i> Xuất Excel (.xlsx)
+          </button>
+          <button id="btn-import-excel" class="btn btn-secondary">
+            <i data-lucide="upload"></i> Nhập Dữ liệu
+          </button>
+          <input type="file" id="file-import" accept=".xlsx, .json" style="display: none;">
+          <button id="btn-reset-demo" class="btn btn-outline" title="Nạp dữ liệu mẫu Thuận An">
+            <i data-lucide="refresh-cw"></i> Nạp Demo
+          </button>
+          <button id="btn-add-row" class="btn btn-primary">
+            <i data-lucide="plus-circle"></i> <span id="add-btn-text">Thêm Học Viên</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs (Google Sheets style) -->
+    <nav class="sheets-tabs-nav">
+      <div class="tabs-list">
+        <button class="sheet-tab-btn active" data-tab="students">
+          <span class="tab-indicator ind-blue"></span>
+          <i data-lucide="users"></i>
+          <span>1. Quản lý học viên</span>
+          <span class="tab-badge" id="badge-students-count">0</span>
+        </button>
+        <button class="sheet-tab-btn" data-tab="classes">
+          <span class="tab-indicator ind-emerald"></span>
+          <i data-lucide="calendar"></i>
+          <span>2. Quản lý danh sách lớp</span>
+          <span class="tab-badge" id="badge-classes-count">0</span>
+        </button>
+        <button class="sheet-tab-btn" data-tab="attendance">
+          <span class="tab-indicator ind-purple"></span>
+          <i data-lucide="check-square"></i>
+          <span>3. Điểm danh (14 Buổi)</span>
+        </button>
+        <button class="sheet-tab-btn" data-tab="makeup">
+          <span class="tab-indicator ind-amber"></span>
+          <i data-lucide="clock"></i>
+          <span>4. Quản lý học bù & gửi tài liệu</span>
+          <span class="tab-badge warning-badge" id="badge-makeup-count">0</span>
+        </button>
+      </div>
+      <div class="live-status">
+        <span class="pulse-dot"></span>
+        <span>Auto-saved (Sẵn sàng)</span>
+      </div>
+    </nav>
+
+    <!-- Main Workspace Area -->
+    <main class="main-workspace">
+
+      <!-- ================= TAB 1: QUẢN LÝ HỌC VIÊN ================= -->
+      <section id="tab-students" class="tab-content-panel active">
+        <!-- Summary metrics cards -->
+        <div class="metrics-grid">
+          <div class="metric-card metric-primary">
+            <div class="metric-label">Tổng học viên</div>
+            <div class="metric-value" id="metric-total-students">0</div>
+            <div class="metric-sub">Toàn cơ sở Thuận An</div>
+          </div>
+          <div class="metric-card metric-success">
+            <div class="metric-label">Tổng Active</div>
+            <div class="metric-value" id="metric-active-students">0</div>
+            <div class="metric-sub text-success">Đang theo học</div>
+          </div>
+          <div class="metric-card metric-warning">
+            <div class="metric-label">Sắp hết phí</div>
+            <div class="metric-value" id="metric-expiring-students">0</div>
+            <div class="metric-sub text-warning">Cần CS tái tục</div>
+          </div>
+          <div class="metric-card metric-info">
+            <div class="metric-label">Handle</div>
+            <div class="metric-value" id="metric-handle-students">0</div>
+            <div class="metric-sub">Đang xử lý / tuyển sinh</div>
+          </div>
+          <div class="metric-card metric-neutral">
+            <div class="metric-label">Bảo lưu</div>
+            <div class="metric-value" id="metric-reserve-students">0</div>
+            <div class="metric-sub">Tạm ngưng học</div>
+          </div>
+          <div class="metric-card metric-secondary">
+            <div class="metric-label">Chuyển cơ sở</div>
+            <div class="metric-value" id="metric-transfer-branch-students">0</div>
+            <div class="metric-sub">Sang cơ sở khác</div>
+          </div>
+          <div class="metric-card metric-secondary">
+            <div class="metric-label">Chuyển nhượng</div>
+            <div class="metric-value" id="metric-transfer-student-students">0</div>
+            <div class="metric-sub">Nhượng suất học</div>
+          </div>
+          <div class="metric-card metric-danger">
+            <div class="metric-label">Nghỉ ngang</div>
+            <div class="metric-value" id="metric-drop-students">0</div>
+            <div class="metric-sub text-danger">Ngưng lộ trình</div>
+          </div>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="table-toolbar">
+          <div class="toolbar-left">
+            <div class="search-box">
+              <i data-lucide="search"></i>
+              <input type="text" id="search-student" placeholder="Tìm theo tên học viên, phụ huynh, SĐT, mã lớp...">
+            </div>
+            <div class="filter-group">
+              <select id="filter-student-status" class="filter-select">
+                <option value="">-- Tất cả trạng thái --</option>
+                <option value="Active">Active</option>
+                <option value="Sắp hết phí">Sắp hết phí</option>
+                <option value="Handle">Handle</option>
+                <option value="Bảo lưu">Bảo lưu</option>
+                <option value="Chuyển cơ sở">Chuyển cơ sở</option>
+                <option value="Chuyển nhượng">Chuyển nhượng</option>
+                <option value="Nghỉ ngang">Nghỉ ngang</option>
+              </select>
+
+              <select id="filter-student-track" class="filter-select">
+                <option value="">-- Khối học --</option>
+                <option value="Coding">Coding</option>
+                <option value="Robotics">Robotics</option>
+              </select>
+
+              <select id="filter-student-class" class="filter-select">
+                <option value="">-- Tất cả lớp --</option>
+              </select>
+            </div>
+          </div>
+          <div class="toolbar-right">
+            <span class="count-label" id="students-table-count">Hiển thị 0 dòng</span>
+          </div>
+        </div>
+
+        <!-- Data Grid: Students -->
+        <div class="sheet-table-wrapper">
+          <table class="sheet-table" id="table-students">
+            <thead>
+              <tr>
+                <th class="col-num sticky-col">#</th>
+                <th class="col-name sticky-col">Họ và tên học viên</th>
+                <th>SĐT Học viên</th>
+                <th>Họ tên Phụ huynh</th>
+                <th>Email</th>
+                <th>Lộ trình đăng ký</th>
+                <th>Học phần</th>
+                <th>Mã khối</th>
+                <th>Mã lớp</th>
+                <th>Hình thức học</th>
+                <th>Trạng thái học viên</th>
+                <th class="col-actions">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-students">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: QUẢN LÝ DANH SÁCH LỚP ================= -->
+      <section id="tab-classes" class="tab-content-panel">
+        <!-- Summary metrics cards for classes -->
+        <div class="metrics-grid metrics-grid-classes">
+          <div class="metric-card metric-primary">
+            <div class="metric-label">Tổng số lớp</div>
+            <div class="metric-value" id="metric-total-classes">0</div>
+            <div class="metric-sub">Đang vận hành & xếp lịch</div>
+          </div>
+          <div class="metric-card metric-success">
+            <div class="metric-label">Lớp Running</div>
+            <div class="metric-value" id="metric-running-classes">0</div>
+            <div class="metric-sub text-success">Đang giảng dạy</div>
+          </div>
+          <div class="metric-card metric-warning">
+            <div class="metric-label">Lớp Chờ lớp</div>
+            <div class="metric-value" id="metric-pending-classes">0</div>
+            <div class="metric-sub text-warning">Đang tuyển sinh ghép lớp</div>
+          </div>
+          <div class="metric-card metric-neutral">
+            <div class="metric-label">Lớp Finished</div>
+            <div class="metric-value" id="metric-finished-classes">0</div>
+            <div class="metric-sub">Đã hoàn thành khóa</div>
+          </div>
+          <div class="metric-card metric-info">
+            <div class="metric-label">Đủ sĩ số</div>
+            <div class="metric-value" id="metric-full-classes">0</div>
+            <div class="metric-sub text-info">Sĩ số Active ≥ 6 HV</div>
+          </div>
+          <div class="metric-card metric-danger">
+            <div class="metric-label">Thiếu sĩ số</div>
+            <div class="metric-value" id="metric-low-classes">0</div>
+            <div class="metric-sub text-danger">Cần tuyển thêm bổ sung</div>
+          </div>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="table-toolbar">
+          <div class="toolbar-left">
+            <div class="search-box">
+              <i data-lucide="search"></i>
+              <input type="text" id="search-class" placeholder="Tìm kiếm theo mã lớp, giáo viên, trợ giảng, CS...">
+            </div>
+            <div class="filter-group">
+              <select id="filter-class-status" class="filter-select">
+                <option value="">-- Tình trạng lớp --</option>
+                <option value="Running">Running</option>
+                <option value="Chờ lớp">Chờ lớp</option>
+                <option value="Finished">Finished</option>
+              </select>
+              <select id="filter-class-track" class="filter-select">
+                <option value="">-- Khối học --</option>
+                <option value="Coding">Coding</option>
+                <option value="Robotics">Robotics</option>
+              </select>
+              <select id="filter-class-capacity" class="filter-select">
+                <option value="">-- Sĩ số lớp --</option>
+                <option value="Đủ sĩ số">Đủ sĩ số (≥6)</option>
+                <option value="Thiếu sĩ số">Thiếu sĩ số (<6)</option>
+              </select>
+            </div>
+          </div>
+          <div class="toolbar-right">
+            <span class="count-label" id="classes-table-count">Hiển thị 0 lớp</span>
+          </div>
+        </div>
+
+        <!-- Data Grid: Classes -->
+        <div class="sheet-table-wrapper">
+          <table class="sheet-table" id="table-classes">
+            <thead>
+              <tr>
+                <th class="col-num sticky-col">#</th>
+                <th class="sticky-col">Mã khối</th>
+                <th class="sticky-col-2">Mã lớp</th>
+                <th>Mô hình học</th>
+                <th>Lịch học (Thứ, Ca giờ)</th>
+                <th>Ngày khai giảng</th>
+                <th>Ngày CP1</th>
+                <th>Ngày CP2</th>
+                <th>Ngày Demo</th>
+                <th>Sĩ số (Active)</th>
+                <th>Giáo viên phụ trách</th>
+                <th>Trợ giảng</th>
+                <th>CS phụ trách</th>
+                <th>Tình trạng lớp</th>
+                <th class="col-actions">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-classes">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: ĐIỂM DANH ================= -->
+      <section id="tab-attendance" class="tab-content-panel">
+        <div class="attendance-top-bar">
+          <div class="attendance-filter-controls">
+            <div class="class-selector-group">
+              <label for="select-attendance-class"><i data-lucide="school"></i> Chọn Mã Lớp Điểm Danh:</label>
+              <select id="select-attendance-class" class="class-picker-select">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+            <div class="class-meta-info" id="attendance-class-info">
+              <!-- Class detail info pills -->
+            </div>
+          </div>
+
+          <div class="attendance-legend">
+            <span class="legend-title">Quy ước màu:</span>
+            <div class="legend-badge badge-present">🟢 Có mặt (P)</div>
+            <div class="legend-badge badge-late">🟡 Đi trễ (L)</div>
+            <div class="legend-badge badge-absent">🔴 Vắng không phép (A) <span>&rarr; Tự chuyển sang Học Bù</span></div>
+            <div class="legend-badge badge-excused">🔵 Vắng có phép (E) <span>&rarr; Tự chuyển sang Học Bù</span></div>
+          </div>
+        </div>
+
+        <div class="sheet-table-wrapper attendance-table-wrapper">
+          <table class="sheet-table attendance-table" id="table-attendance">
+            <thead>
+              <tr id="attendance-thead-tr">
+                <th class="col-num sticky-col">#</th>
+                <th class="col-name sticky-col">Họ và tên học viên</th>
+                <th class="sticky-col-2">Mã lớp</th>
+                <!-- 14 Sessions headers -->
+                <th class="col-session">B1<span class="session-date" data-session="1"></span></th>
+                <th class="col-session">B2<span class="session-date" data-session="2"></span></th>
+                <th class="col-session">B3<span class="session-date" data-session="3"></span></th>
+                <th class="col-session">B4<span class="session-date" data-session="4"></span></th>
+                <th class="col-session">B5<span class="session-date" data-session="5"></span></th>
+                <th class="col-session">B6<span class="session-date" data-session="6"></span></th>
+                <th class="col-session">B7 (CP1)<span class="session-date" data-session="7"></span></th>
+                <th class="col-session">B8<span class="session-date" data-session="8"></span></th>
+                <th class="col-session">B9<span class="session-date" data-session="9"></span></th>
+                <th class="col-session">B10<span class="session-date" data-session="10"></span></th>
+                <th class="col-session">B11<span class="session-date" data-session="11"></span></th>
+                <th class="col-session">B12<span class="session-date" data-session="12"></span></th>
+                <th class="col-session">B13 (CP2)<span class="session-date" data-session="13"></span></th>
+                <th class="col-session">B14 (Demo)<span class="session-date" data-session="14"></span></th>
+                <th>Tổng vắng</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-attendance">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: HỌC BÙ & TÀI LIỆU ================= -->
+      <section id="tab-makeup" class="tab-content-panel">
+        <div class="table-toolbar">
+          <div class="toolbar-left">
+            <div class="search-box">
+              <i data-lucide="search"></i>
+              <input type="text" id="search-makeup" placeholder="Tìm theo tên học viên, mã lớp, trạng thái bù...">
+            </div>
+            <div class="filter-group">
+              <select id="filter-makeup-class" class="filter-select">
+                <option value="">-- Tất cả lớp --</option>
+              </select>
+              <select id="filter-makeup-status" class="filter-select">
+                <option value="">-- Trạng thái học bù --</option>
+                <option value="pending">Chưa hoàn thành bù</option>
+                <option value="completed">Đã hoàn thành bù</option>
+              </select>
+            </div>
+          </div>
+          <div class="toolbar-right">
+            <div class="notice-bubble">
+              <i data-lucide="info"></i>
+              <span>Dữ liệu vắng tự động đồng bộ từ <b>Tab 3 (Điểm danh)</b> khi tích 🔴 hoặc 🔵.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sheet-table-wrapper">
+          <table class="sheet-table" id="table-makeup">
+            <thead>
+              <tr class="header-grouped">
+                <th rowspan="2" class="col-num sticky-col">#</th>
+                <th rowspan="2" class="col-name sticky-col">Tên học viên</th>
+                <th rowspan="2" class="sticky-col-2">Mã lớp</th>
+                <th colspan="4" class="group-header group-header-1">ĐỢT VẮNG LẦN 1</th>
+                <th colspan="4" class="group-header group-header-2">ĐỢT VẮNG LẦN 2</th>
+                <th rowspan="2">Ghi chú của CS / Giáo viên</th>
+                <th rowspan="2" class="col-actions">Thao tác</th>
+              </tr>
+              <tr class="header-sub">
+                <th>Ngày vắng 1</th>
+                <th>Đã gửi tài liệu</th>
+                <th>Lịch bù lần 1</th>
+                <th>Trạng thái bù 1</th>
+                <th>Ngày vắng 2</th>
+                <th>Đã gửi tài liệu</th>
+                <th>Lịch bù lần 2</th>
+                <th>Trạng thái bù 2</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-makeup">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Modal for adding/editing student -->
+    <div class="modal-overlay" id="modal-student">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3 id="modal-student-title">Thêm Học Viên Mới</h3>
+          <button class="modal-close" data-close="modal-student">&times;</button>
+        </div>
+        <form id="form-student">
+          <div class="modal-body form-grid">
+            <input type="hidden" id="student-id">
+            <div class="form-group col-span-2">
+              <label>Họ và tên học viên *</label>
+              <input type="text" id="student-fullName" required placeholder="Ví dụ: Nguyễn Văn An">
+            </div>
+            <div class="form-group">
+              <label>Số điện thoại học viên</label>
+              <input type="text" id="student-phone" placeholder="Ví dụ: 0901234567">
+            </div>
+            <div class="form-group">
+              <label>Họ tên phụ huynh</label>
+              <input type="text" id="student-parentName" placeholder="Ví dụ: Chị Trần Mai">
+            </div>
+            <div class="form-group">
+              <label>Email liên hệ</label>
+              <input type="email" id="student-email" placeholder="Ví dụ: phuhuynh@gmail.com">
+            </div>
+            <div class="form-group">
+              <label>Khối học *</label>
+              <select id="student-trackCategory" required>
+                <option value="Coding">Coding</option>
+                <option value="Robotics">Robotics</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Mã lớp *</label>
+              <select id="student-classCode" required>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Lộ trình đăng ký</label>
+              <input type="text" id="student-courseTrack" placeholder="Ví dụ: C4K, Intensive...">
+            </div>
+            <div class="form-group">
+              <label>Học phần</label>
+              <input type="text" id="student-currentModule" placeholder="Ví dụ: GB02, GA01, Python 1...">
+            </div>
+            <div class="form-group">
+              <label>Hình thức học *</label>
+              <select id="student-studyFormat" required>
+                <option value="Offline">Offline</option>
+                <option value="Hybrid">Hybrid</option>
+                <option value="Online">Online</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Trạng thái học viên *</label>
+              <select id="student-status" required>
+                <option value="Active">Active</option>
+                <option value="Sắp hết phí">Sắp hết phí</option>
+                <option value="Handle">Handle</option>
+                <option value="Bảo lưu">Bảo lưu</option>
+                <option value="Chuyển cơ sở">Chuyển cơ sở</option>
+                <option value="Chuyển nhượng">Chuyển nhượng</option>
+                <option value="Nghỉ ngang">Nghỉ ngang</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-close="modal-student">Hủy</button>
+            <button type="submit" class="btn btn-primary">Lưu Học Viên</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal for adding/editing class -->
+    <div class="modal-overlay" id="modal-class">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3 id="modal-class-title">Thêm Lớp Học Mới</h3>
+          <button class="modal-close" data-close="modal-class">&times;</button>
+        </div>
+        <form id="form-class">
+          <div class="modal-body form-grid">
+            <div class="form-group">
+              <label>Mã khối *</label>
+              <select id="class-trackCategory" required>
+                <option value="Coding">Coding</option>
+                <option value="Robotics">Robotics</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Mã lớp (Định danh duy nhất) *</label>
+              <input type="text" id="class-classCode" required placeholder="Ví dụ: TA-C4K-GB02-HB">
+            </div>
+            <div class="form-group">
+              <label>Mô hình học *</label>
+              <select id="class-studyFormat" required>
+                <option value="Offline">Offline</option>
+                <option value="Hybrid">Hybrid</option>
+                <option value="Online">Online</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Lịch học (Thứ, Ca giờ) *</label>
+              <input type="text" id="class-schedule" required placeholder="Ví dụ: T7 (17:30 - 19:30)">
+            </div>
+            <div class="form-group">
+              <label>Ngày khai giảng</label>
+              <input type="date" id="class-startDate">
+            </div>
+            <div class="form-group">
+              <label>Ngày CP1 (Checkpoint 1)</label>
+              <input type="date" id="class-cp1Date">
+            </div>
+            <div class="form-group">
+              <label>Ngày CP2 (Checkpoint 2)</label>
+              <input type="date" id="class-cp2Date">
+            </div>
+            <div class="form-group">
+              <label>Ngày Demo Day</label>
+              <input type="date" id="class-demoDate">
+            </div>
+            <div class="form-group">
+              <label>Giáo viên phụ trách</label>
+              <input type="text" id="class-teacher" placeholder="Ví dụ: Thầy Hoàng Minh">
+            </div>
+            <div class="form-group">
+              <label>Trợ giảng (TA)</label>
+              <input type="text" id="class-ta" placeholder="Ví dụ: Cô Kim Ngân">
+            </div>
+            <div class="form-group">
+              <label>CS phụ trách</label>
+              <input type="text" id="class-cs" placeholder="Ví dụ: Chị Lan Anh">
+            </div>
+            <div class="form-group">
+              <label>Tình trạng lớp *</label>
+              <select id="class-status" required>
+                <option value="Running">Running</option>
+                <option value="Chờ lớp">Chờ lớp</option>
+                <option value="Finished">Finished</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-close="modal-class">Hủy</button>
+            <button type="submit" class="btn btn-primary">Lưu Lớp Học</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
