@@ -54,7 +54,7 @@ The system consists of 4 interconnected worksheets:
 * **Class Selector Filter**: Instant switching between active classes.
 * **14 Sessions Grid**:
   - Fixed sticky columns: Student Name and Class Code.
-  - 14 distinct session columns (Sessions 1 to 14, highlighting Checkpoint 1 at Session 7, Checkpoint 2 at Session 13, and Demo Day at Session 14).
+  - 14 distinct session columns (Sessions 1 to 14, dynamically adjusted by Track: Coding (CP1 at Session 5, CP2 at Session 9, Demo Day at Session 14) and Robotics (CP1 at Session 4, CP2 at Session 8, Demo Day at Session 14)).
 * **Color-Coded Status Cycles**:
   - 🟢 **Green (P - Present)**: Present and on time.
   - 🟡 **Yellow (L - Late)**: Arrived late.

@@ -734,15 +734,63 @@ class App {
     const classCode = this.selectedAttendanceClass;
     const curClass = this.store.classes.find(c => c.classCode === classCode);
 
+    // Dynamic Checkpoint milestones per track:
+    // Coding: Buổi 5 là CP1, Buổi 9 là CP2, Buổi 14 là Demo Day
+    // Robotics: Buổi 4 là CP1, Buổi 8 là CP2, Buổi 14 là Demo Day
+    const isRobotics = curClass && curClass.trackCategory === "Robotics";
+    const cp1Session = isRobotics ? 4 : 5;
+    const cp2Session = isRobotics ? 8 : 9;
+
+    // Render Dynamic Thead based on selected class category
+    const theadTr = document.getElementById("attendance-thead-tr");
+    if (theadTr) {
+      let thSessions = "";
+      for (let s = 1; s <= 14; s++) {
+        let label = `B${s}`;
+        let sub = `Buổi ${s}`;
+        let highlightClass = "";
+
+        if (s === cp1Session) {
+          label = `B${s} (CP1)`;
+          sub = "Checkpoint 1";
+          highlightClass = " style='background-color:#fef3c7; color:#b45309; border-bottom:3px solid #f59e0b;'";
+        } else if (s === cp2Session) {
+          label = `B${s} (CP2)`;
+          sub = "Checkpoint 2";
+          highlightClass = " style='background-color:#e0f2fe; color:#0284c7; border-bottom:3px solid #0284c7;'";
+        } else if (s === 14) {
+          label = `B14 (Demo)`;
+          sub = "Demo Day";
+          highlightClass = " style='background-color:#fce7f3; color:#be185d; border-bottom:3px solid #db2777;'";
+        }
+
+        thSessions += `<th class="col-session"${highlightClass}>${label}<span class="session-date">${sub}</span></th>`;
+      }
+
+      theadTr.innerHTML = `
+        <th class="col-num sticky-col">#</th>
+        <th class="col-name sticky-col">Họ và tên học viên</th>
+        <th class="sticky-col-2">Mã lớp</th>
+        ${thSessions}
+        <th>Tổng vắng</th>
+      `;
+    }
+
     if (curClass) {
       const activeCount = this.store.getClassActiveCount(classCode);
+      const trackBadge = curClass.trackCategory === "Coding" ? "badge-coding" : "badge-robotics";
+      const cpNote = isRobotics 
+        ? "🤖 <b>Robotics:</b> CP1 (Buổi 4) | CP2 (Buổi 8) | Demo (Buổi 14)" 
+        : "💻 <b>Coding:</b> CP1 (Buổi 5) | CP2 (Buổi 9) | Demo (Buổi 14)";
+
       this.attendanceClassInfo.innerHTML = `
-        <span class="class-info-pill"><b>Khối:</b> ${curClass.trackCategory}</span>
+        <span class="class-info-pill"><span class="badge ${trackBadge}">${curClass.trackCategory}</span></span>
         <span class="class-info-pill"><b>Lịch học:</b> ${curClass.schedule || 'Chưa xếp'}</span>
         <span class="class-info-pill"><b>GV:</b> ${curClass.teacher || 'Chưa phân'}</span>
         <span class="class-info-pill"><b>TA:</b> ${curClass.ta || 'Chưa phân'}</span>
         <span class="class-info-pill"><b>CS:</b> ${curClass.cs || 'Chưa phân'}</span>
         <span class="class-info-pill"><b>Sĩ số Active:</b> ${activeCount}</span>
+        <span class="class-info-pill" style="color: #b91c1c; background:#fef2f2; border-color:#fecaca;">${cpNote}</span>
       `;
     } else {
       this.attendanceClassInfo.innerHTML = "";
