@@ -735,11 +735,12 @@ class App {
     const curClass = this.store.classes.find(c => c.classCode === classCode);
 
     // Dynamic Checkpoint milestones per track:
-    // Coding: Buổi 5 là CP1, Buổi 9 là CP2, Buổi 14 là Demo Day
-    // Robotics: Buổi 4 là CP1, Buổi 8 là CP2, Buổi 14 là Demo Day
+    // Chỉ hiển thị mốc CP khi ĐÃ CHỌN LỚP CỤ THỂ!
+    // Nếu chưa chọn lớp (hoặc chưa có lớp): Hiển thị bình thường B1 -> B14 không tô màu CP.
     const isRobotics = curClass && curClass.trackCategory === "Robotics";
-    const cp1Session = isRobotics ? 4 : 5;
-    const cp2Session = isRobotics ? 8 : 9;
+    const isCoding = curClass && curClass.trackCategory === "Coding";
+    const cp1Session = isRobotics ? 4 : (isCoding ? 5 : null);
+    const cp2Session = isRobotics ? 8 : (isCoding ? 9 : null);
 
     // Render Dynamic Thead based on selected class category
     const theadTr = document.getElementById("attendance-thead-tr");
@@ -750,18 +751,20 @@ class App {
         let sub = `Buổi ${s}`;
         let highlightClass = "";
 
-        if (s === cp1Session) {
-          label = `B${s} (CP1)`;
-          sub = "Checkpoint 1";
-          highlightClass = " style='background-color:#fef3c7; color:#b45309; border-bottom:3px solid #f59e0b;'";
-        } else if (s === cp2Session) {
-          label = `B${s} (CP2)`;
-          sub = "Checkpoint 2";
-          highlightClass = " style='background-color:#e0f2fe; color:#0284c7; border-bottom:3px solid #0284c7;'";
-        } else if (s === 14) {
-          label = `B14 (Demo)`;
-          sub = "Demo Day";
-          highlightClass = " style='background-color:#fce7f3; color:#be185d; border-bottom:3px solid #db2777;'";
+        if (curClass) {
+          if (s === cp1Session) {
+            label = `B${s} (CP1)`;
+            sub = "Checkpoint 1";
+            highlightClass = " style='background-color:#fef3c7; color:#b45309; border-bottom:3px solid #f59e0b;'";
+          } else if (s === cp2Session) {
+            label = `B${s} (CP2)`;
+            sub = "Checkpoint 2";
+            highlightClass = " style='background-color:#e0f2fe; color:#0284c7; border-bottom:3px solid #0284c7;'";
+          } else if (s === 14) {
+            label = `B14 (Demo)`;
+            sub = "Demo Day";
+            highlightClass = " style='background-color:#fce7f3; color:#be185d; border-bottom:3px solid #db2777;'";
+          }
         }
 
         thSessions += `<th class="col-session"${highlightClass}>${label}<span class="session-date">${sub}</span></th>`;
