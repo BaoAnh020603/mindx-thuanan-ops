@@ -3,10 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MindX Thuận An - Hệ Thống Quản Lý Vận Hành Cơ Sở</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <title>MindX Technology School Thuận An - Hệ Thống Quản Lý Vận Hành Cơ Sở</title>
+  <link rel="icon" type="image/jpeg" href="assets/mindx-thuanan-logo.jpg">
   <link rel="stylesheet" href="style.css">
   <!-- SheetJS for Export/Import Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -15,26 +13,39 @@
 </head>
 <body>
   <div class="app-container">
-    <!-- Header bar -->
+    <!-- Header bar with official MindX Logo & Thuận An Campus branding -->
     <header class="app-header">
       <div class="header-left">
-        <div class="brand-badge">
-          <span class="brand-mindx">Mind<span class="brand-x">X</span></span>
-          <span class="brand-branch">Thuận An Ops</span>
+        <div class="brand-wrapper">
+          <img src="assets/mindx-thuanan-logo.jpg" alt="MindX Thuận An" class="brand-logo-img">
+          <div class="brand-titles">
+            <div class="brand-main-title">
+              <span class="brand-logo-text">mind<span class="brand-x-char">X</span></span>
+              <span class="campus-pill">Thuận An</span>
+            </div>
+            <span class="brand-sub-title">Technology School</span>
+          </div>
         </div>
-        <div class="system-tag">Hệ Thống Quản Lý Vận Hành Lớp Học & Học Viên</div>
+
+        <div class="divider-vertical"></div>
+
+        <div class="system-title-tag">
+          <span class="title">Hệ Thống Bảng Quản Trị Vận Hành Lớp Học & Học Viên</span>
+          <span class="slogan">Nurturing Global Pioneers in Tech</span>
+        </div>
       </div>
+
       <div class="header-right">
         <div class="quick-actions">
-          <button id="btn-export-excel" class="btn btn-secondary">
+          <button id="btn-export-excel" class="btn btn-secondary" title="Xuất toàn bộ 3 phân hệ ra file Excel">
             <i data-lucide="download"></i> Xuất Excel (.xlsx)
           </button>
-          <button id="btn-import-excel" class="btn btn-secondary">
-            <i data-lucide="upload"></i> Nhập Dữ liệu
+          <button id="btn-import-excel" class="btn btn-secondary" title="Tải dữ liệu từ file Excel hoặc JSON">
+            <i data-lucide="upload"></i> Nhập Dữ Liệu
           </button>
           <input type="file" id="file-import" accept=".xlsx, .json" style="display: none;">
-          <button id="btn-reset-demo" class="btn btn-outline" title="Nạp dữ liệu mẫu Thuận An">
-            <i data-lucide="refresh-cw"></i> Nạp Demo
+          <button id="btn-reset-demo" class="btn btn-outline" title="Nạp lại bộ dữ liệu mẫu cơ sở Thuận An">
+            <i data-lucide="rotate-ccw"></i> Nạp Demo
           </button>
           <button id="btn-add-row" class="btn btn-primary">
             <i data-lucide="plus-circle"></i> <span id="add-btn-text">Thêm Học Viên</span>
@@ -43,36 +54,32 @@
       </div>
     </header>
 
-    <!-- Navigation Tabs (Google Sheets style) -->
+    <!-- Navigation Tabs (Google Sheets style with crisp colors) -->
     <nav class="sheets-tabs-nav">
       <div class="tabs-list">
         <button class="sheet-tab-btn active" data-tab="students">
-          <span class="tab-indicator ind-blue"></span>
           <i data-lucide="users"></i>
-          <span>1. Quản lý học viên</span>
+          <span>1. Quản lý học viên (Students Sheet)</span>
           <span class="tab-badge" id="badge-students-count">0</span>
         </button>
         <button class="sheet-tab-btn" data-tab="classes">
-          <span class="tab-indicator ind-emerald"></span>
           <i data-lucide="calendar"></i>
-          <span>2. Quản lý danh sách lớp</span>
+          <span>2. Quản lý danh sách lớp (Classes Sheet)</span>
           <span class="tab-badge" id="badge-classes-count">0</span>
         </button>
         <button class="sheet-tab-btn" data-tab="attendance">
-          <span class="tab-indicator ind-purple"></span>
           <i data-lucide="check-square"></i>
-          <span>3. Điểm danh (14 Buổi)</span>
+          <span>3. Điểm danh 14 buổi (Attendance Sheet)</span>
         </button>
         <button class="sheet-tab-btn" data-tab="makeup">
-          <span class="tab-indicator ind-amber"></span>
           <i data-lucide="clock"></i>
-          <span>4. Quản lý học bù & gửi tài liệu</span>
+          <span>4. Học bù & Gửi tài liệu (Make-up Classes)</span>
           <span class="tab-badge warning-badge" id="badge-makeup-count">0</span>
         </button>
       </div>
       <div class="live-status">
         <span class="pulse-dot"></span>
-        <span>Auto-saved (Sẵn sàng)</span>
+        <span>Hệ thống sẵn sàng (Auto-saved)</span>
       </div>
     </nav>
 
@@ -101,7 +108,7 @@
           <div class="metric-card metric-info">
             <div class="metric-label">Handle</div>
             <div class="metric-value" id="metric-handle-students">0</div>
-            <div class="metric-sub">Đang xử lý / tuyển sinh</div>
+            <div class="metric-sub text-info">Đang xử lý / tuyển sinh</div>
           </div>
           <div class="metric-card metric-neutral">
             <div class="metric-label">Bảo lưu</div>
@@ -169,7 +176,7 @@
                 <th class="col-name sticky-col">Họ và tên học viên</th>
                 <th>SĐT Học viên</th>
                 <th>Họ tên Phụ huynh</th>
-                <th>Email</th>
+                <th>Email liên hệ</th>
                 <th>Lộ trình đăng ký</th>
                 <th>Học phần</th>
                 <th>Mã khối</th>
@@ -218,7 +225,7 @@
           <div class="metric-card metric-danger">
             <div class="metric-label">Thiếu sĩ số</div>
             <div class="metric-value" id="metric-low-classes">0</div>
-            <div class="metric-sub text-danger">Cần tuyển thêm bổ sung</div>
+            <div class="metric-sub text-danger">Cần tuyển bổ sung (< 6)</div>
           </div>
         </div>
 
@@ -301,8 +308,8 @@
             <span class="legend-title">Quy ước màu:</span>
             <div class="legend-badge badge-present">🟢 Có mặt (P)</div>
             <div class="legend-badge badge-late">🟡 Đi trễ (L)</div>
-            <div class="legend-badge badge-absent">🔴 Vắng không phép (A) <span>&rarr; Tự chuyển sang Học Bù</span></div>
-            <div class="legend-badge badge-excused">🔵 Vắng có phép (E) <span>&rarr; Tự chuyển sang Học Bù</span></div>
+            <div class="legend-badge badge-absent">🔴 Vắng không phép (A) <span>&rarr; Tự chuyển Học Bù</span></div>
+            <div class="legend-badge badge-excused">🔵 Vắng có phép (E) <span>&rarr; Tự chuyển Học Bù</span></div>
           </div>
         </div>
 
@@ -313,21 +320,21 @@
                 <th class="col-num sticky-col">#</th>
                 <th class="col-name sticky-col">Họ và tên học viên</th>
                 <th class="sticky-col-2">Mã lớp</th>
-                <!-- 14 Sessions headers -->
-                <th class="col-session">B1<span class="session-date" data-session="1"></span></th>
-                <th class="col-session">B2<span class="session-date" data-session="2"></span></th>
-                <th class="col-session">B3<span class="session-date" data-session="3"></span></th>
-                <th class="col-session">B4<span class="session-date" data-session="4"></span></th>
-                <th class="col-session">B5<span class="session-date" data-session="5"></span></th>
-                <th class="col-session">B6<span class="session-date" data-session="6"></span></th>
-                <th class="col-session">B7 (CP1)<span class="session-date" data-session="7"></span></th>
-                <th class="col-session">B8<span class="session-date" data-session="8"></span></th>
-                <th class="col-session">B9<span class="session-date" data-session="9"></span></th>
-                <th class="col-session">B10<span class="session-date" data-session="10"></span></th>
-                <th class="col-session">B11<span class="session-date" data-session="11"></span></th>
-                <th class="col-session">B12<span class="session-date" data-session="12"></span></th>
-                <th class="col-session">B13 (CP2)<span class="session-date" data-session="13"></span></th>
-                <th class="col-session">B14 (Demo)<span class="session-date" data-session="14"></span></th>
+                <!-- 14 Sessions headers with CP and Demo markers -->
+                <th class="col-session">B1<span class="session-date">Buổi 1</span></th>
+                <th class="col-session">B2<span class="session-date">Buổi 2</span></th>
+                <th class="col-session">B3<span class="session-date">Buổi 3</span></th>
+                <th class="col-session">B4<span class="session-date">Buổi 4</span></th>
+                <th class="col-session">B5<span class="session-date">Buổi 5</span></th>
+                <th class="col-session">B6<span class="session-date">Buổi 6</span></th>
+                <th class="col-session">B7 (CP1)<span class="session-date">Checkpoint 1</span></th>
+                <th class="col-session">B8<span class="session-date">Buổi 8</span></th>
+                <th class="col-session">B9<span class="session-date">Buổi 9</span></th>
+                <th class="col-session">B10<span class="session-date">Buổi 10</span></th>
+                <th class="col-session">B11<span class="session-date">Buổi 11</span></th>
+                <th class="col-session">B12<span class="session-date">Buổi 12</span></th>
+                <th class="col-session">B13 (CP2)<span class="session-date">Checkpoint 2</span></th>
+                <th class="col-session">B14 (Demo)<span class="session-date">Demo Day</span></th>
                 <th>Tổng vắng</th>
               </tr>
             </thead>
@@ -409,15 +416,15 @@
             <input type="hidden" id="student-id">
             <div class="form-group col-span-2">
               <label>Họ và tên học viên *</label>
-              <input type="text" id="student-fullName" required placeholder="Ví dụ: Nguyễn Văn An">
+              <input type="text" id="student-fullName" required placeholder="Ví dụ: Nguyễn Gia Bảo">
             </div>
             <div class="form-group">
               <label>Số điện thoại học viên</label>
-              <input type="text" id="student-phone" placeholder="Ví dụ: 0901234567">
+              <input type="text" id="student-phone" placeholder="Ví dụ: 0908123456">
             </div>
             <div class="form-group">
               <label>Họ tên phụ huynh</label>
-              <input type="text" id="student-parentName" placeholder="Ví dụ: Chị Trần Mai">
+              <input type="text" id="student-parentName" placeholder="Ví dụ: Nguyễn Văn Hùng">
             </div>
             <div class="form-group">
               <label>Email liên hệ</label>
@@ -438,7 +445,7 @@
             </div>
             <div class="form-group">
               <label>Lộ trình đăng ký</label>
-              <input type="text" id="student-courseTrack" placeholder="Ví dụ: C4K, Intensive...">
+              <input type="text" id="student-courseTrack" placeholder="Ví dụ: Code For Kids (C4K)">
             </div>
             <div class="form-group">
               <label>Học phần</label>
@@ -531,7 +538,7 @@
             </div>
             <div class="form-group">
               <label>CS phụ trách</label>
-              <input type="text" id="class-cs" placeholder="Ví dụ: Chị Lan Anh">
+              <input type="text" id="class-cs" placeholder="Ví dụ: Chị Thảo CS">
             </div>
             <div class="form-group">
               <label>Tình trạng lớp *</label>

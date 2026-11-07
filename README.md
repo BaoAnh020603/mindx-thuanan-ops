@@ -1,59 +1,124 @@
-# Hệ Thống Quản Lý Vận Hành Cơ Sở MindX Thuận An (MindX Thuan An Ops Management Web)
+# MindX Technology School - Thuận An Campus Ops Management System
 
-Hệ thống web quản lý vận hành cơ sở theo giao diện bảng dữ liệu (Sheet-like interface), giúp giáo vụ (CS) và quản lý thao tác trực tiếp, quen thuộc như Google Sheets / Excel nhưng có tự động hóa và ràng buộc dữ liệu.
+<p align="center">
+  <img src="assets/mindx-thuanan-logo.jpg" alt="MindX Technology School - Thuận An Campus" width="160" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(217,27,36,0.35);">
+</p>
 
-## ✨ 4 Phân hệ chính (4 Worksheets)
-
-1. **Tab 1: Quản lý học viên (Students Sheet)**
-   - Dãy Cards thống kê số lượng tự động: **Tổng số học viên | Tổng Active | Sắp hết phí | Handle | Bảo lưu | Chuyển cơ sở | Chuyển nhượng | Nghỉ ngang**.
-   - Trường dữ liệu: Họ và tên học viên, SĐT, Họ tên phụ huynh, Email, Lộ trình đăng ký, Học phần, Mã khối (Coding, Robotics), Mã lớp, Hình thức học (Offline, Hybrid, Online), Trạng thái.
-   - Thao tác nhanh: Chỉnh sửa trực tiếp tên học viên, đổi trạng thái qua dropdown, tìm kiếm & lọc đa tiêu chí.
-
-2. **Tab 2: Quản lý danh sách lớp học (Classes Sheet)**
-   - Dãy Cards: **Tổng số lớp | Running | Chờ lớp | Finished | Đủ sĩ số | Thiếu sĩ số**.
-   - Tự động tính sĩ số lớp dựa trên số học viên Active thuộc mã lớp và gắn nhãn **Đủ sĩ số** (≥6 học viên) hoặc **Thiếu sĩ số** (<6 học viên).
-   - Trường dữ liệu: Mã khối, Mã lớp, Mô hình học, Lịch học (Thứ, Ca), Ngày khai giảng, Mốc sự kiện (Ngày CP1, Ngày CP2, Ngày Demo), Giáo viên phụ trách, Trợ giảng, CS phụ trách, Tình trạng lớp.
-
-3. **Tab 3: Điểm danh (Attendance Sheet)**
-   - Chọn mã lớp để load danh sách học viên tương ứng.
-   - 14 cột tương ứng 14 buổi học (có mốc CP1 ở B7, CP2 ở B13, Demo ở B14).
-   - Quy ước mã màu:
-     - 🟢 **Xanh lá (P):** Có mặt / Học đầy đủ
-     - 🟡 **Vàng (L):** Đi trễ
-     - 🔴 **Đỏ (A):** Vắng không phép
-     - 🔵 **Xanh dương (E):** Vắng có phép
-   - **Tự động hóa:** Khi tick 🔴 hoặc 🔵, hệ thống tự động ghi nhận một bản ghi vắng sang Tab Học bù.
-
-4. **Tab 4: Quản lý học bù & gửi tài liệu (Make-up Classes)**
-   - Tự động đồng bộ các buổi vắng từ Tab Điểm danh.
-   - Theo dõi: Ngày vắng lần 1, Checkbox "Đã gửi tài liệu", Lịch xếp bù 1, Trạng thái bù 1.
-   - Theo dõi: Ngày vắng lần 2, Checkbox "Đã gửi tài liệu", Lịch xếp bù 2, Trạng thái bù 2.
-   - Ghi chú CS/Giáo viên.
-
-5. **Xuất & Nhập dữ liệu (Excel Integration)**
-   - Nút **Xuất Excel (.xlsx)**: Xuất toàn bộ dữ liệu 3 bảng (Học viên, Lớp học, Học bù) vào 1 file Excel đa sheet chuẩn đẹp chỉ với 1 cú click.
-   - Nạp dữ liệu mẫu ban đầu (Demo) & Tự động lưu LocalStorage.
+<p align="center">
+  <strong>High-performance, sheet-like operations dashboard designed specifically for MindX Thuận An Campus staff, teachers, customer support (CS), and academic management.</strong>
+</p>
 
 ---
 
-## 🚀 Hướng dẫn chạy và Deploy
+## 📌 Overview
 
-### 1. Xem trước trên máy cục bộ (Local preview)
-Chạy bằng Python có sẵn trong máy:
+**MindX Thuận An Ops** is a specialized web-based operations workspace that replicates the fluid, intuitive experience of spreadsheet tools (Google Sheets & Microsoft Excel) while enforcing strict relational integrity, real-time metrics calculation, automatic attendance-to-makeup synchronization, and one-click multi-sheet Excel exporting.
+
+The user interface follows the official **MindX Technology School** brand guidelines with signature Crimson Red accents, ultra-crisp high-contrast typography, sharp borders, and visual status badges tailored for daily administrative workflows.
+
+---
+
+## 🌟 Key Modules & Data Schema
+
+The system consists of 4 interconnected worksheets:
+
+### 1. Tab 1: Students Management (`Students Sheet`)
+* **Live Summary Metrics Cards**: Real-time counter automatically segmented by student statuses:
+  $$\text{Total Students} \mid \text{Active} \mid \text{Expiring Soon (Sắp hết phí)} \mid \text{Handle} \mid \text{Reserved (Bảo lưu)} \mid \text{Branch Transfer} \mid \text{Course Transfer} \mid \text{Dropped Out (Nghỉ ngang)}$$
+* **Schema Fields**:
+  - Full Name, Student Phone Number
+  - Parent Name, Email
+  - Course Track (e.g., Code For Kids - C4K, Fullstack Intensive, Robotics Discovery)
+  - Current Module (e.g., GA01, GA02, GB01, GB02, SB01, Python 01)
+  - Track Category (`Coding` / `Robotics`)
+  - Class Code (Dynamic dropdown bound to the Classes Sheet)
+  - Study Format (`Offline`, `Hybrid`, `Online`)
+  - Student Status (`Active`, `Sắp hết phí`, `Handle`, `Bảo lưu`, `Chuyển cơ sở`, `Chuyển nhượng`, `Nghỉ ngang`)
+* **Interactive Features**: Inline name editing, immediate status dropdown updates with metric auto-recalculation, and multi-field search/filtering.
+
+### 2. Tab 2: Classes Management (`Classes Sheet`)
+* **Live Summary Metrics Cards**:
+  $$\text{Total Classes} \mid \text{Running} \mid \text{Pending (Chờ lớp)} \mid \text{Finished} \mid \text{Sufficient Capacity (≥ 6)} \mid \text{Low Capacity (< 6)}$$
+* **Schema Fields**:
+  - Track Category (`Coding`, `Robotics`)
+  - Unique Class Code (e.g., `TA-C4K-GB02-HB`, `TA-ROB-DISC01`)
+  - Study Format (`Offline`, `Hybrid`, `Online`)
+  - Class Schedule (Day & Time, e.g., `Sat 17:30 - 19:30`)
+  - Start Date
+  - Milestones: Checkpoint 1 (`CP1 Date`), Checkpoint 2 (`CP2 Date`), Demo Day Date
+  - Enrollment / Capacity: Automatically counted from active students assigned to this class code.
+  - Personnel: Lead Teacher, Teaching Assistant (TA), Customer Support (CS) Lead.
+  - Class Status (`Running`, `Chờ lớp`, `Finished`).
+
+### 3. Tab 3: Attendance Grid (`Attendance Sheet`)
+* **Class Selector Filter**: Instant switching between active classes.
+* **14 Sessions Grid**:
+  - Fixed sticky columns: Student Name and Class Code.
+  - 14 distinct session columns (Sessions 1 to 14, highlighting Checkpoint 1 at Session 7, Checkpoint 2 at Session 13, and Demo Day at Session 14).
+* **Color-Coded Status Cycles**:
+  - 🟢 **Green (P - Present)**: Present and on time.
+  - 🟡 **Yellow (L - Late)**: Arrived late.
+  - 🔴 **Red (A - Absent Unexcused)**: Absent without leave.
+  - 🔵 **Blue (E - Absent Excused)**: Absent with notice.
+* **Smart Automation**: Marking a student as **Absent (Red or Blue)** instantly dispatches a record to the Make-up Classes worksheet.
+
+### 4. Tab 4: Make-up Classes & Study Materials (`Make-up Sheet`)
+* **Auto-generated Absence Tracking**:
+  - Student Name, Class Code.
+  - **Round 1 Absence**: Absence Date, "Materials Sent" Checkbox, Scheduled Make-up Date/Class, Completion Status (`Chưa bù`, `Đã bù`, `Hủy bù`).
+  - **Round 2 Absence**: Absence Date, "Materials Sent" Checkbox, Scheduled Make-up Date/Class, Completion Status.
+  - Notes for Teacher and CS.
+
+---
+
+## ⚡ Data Portability & Storage
+
+* **Multi-Sheet Excel Export (`.xlsx`)**: One click downloads a formatted Microsoft Excel workbook containing 3 individual sheets:
+  1. `Danh sách học viên` (Students)
+  2. `Danh sách lớp học` (Classes)
+  3. `Quản lý học bù` (Make-up Classes)
+* **Import Support**: Supports importing data backups via `.xlsx` and `.json`.
+* **Zero Data Loss**: All modifications persist locally via browser `localStorage`.
+* **Demo Data Reset**: Instant reset button preloaded with Thuận An campus demo data.
+
+---
+
+## 🚀 Getting Started & Deployment
+
+### 1. Local Development
+Because the application is built using modern vanilla Web standards (HTML5, CSS3, ES6+), no heavy build tools or Node.js environment is mandatory to run the application locally.
+
+Using Python:
 ```bash
 python -m http.server 3000
 ```
-Sau đó truy cập: `http://localhost:3000`
+Then navigate to: `http://localhost:3000` in your web browser.
 
-### 2. Triển khai lên Vercel
-Dự án đã có sẵn cấu hình `vercel.json` cho static web:
-1. Đẩy code lên GitHub repository:
+### 2. Deployment to Vercel (1-Click Static Deployment)
+
+1. **Commit and push to GitHub**:
    ```bash
-   git init
    git add .
-   git commit -m "feat: init mindx thuan an ops management system"
+   git commit -m "feat: complete mindx thuan an ops management web app"
    git branch -M main
-   git remote add origin <URL-GITHUB-REPO-CUA-BAN>
+   git remote add origin https://github.com/<your-username>/mindx-thuanan-ops.git
    git push -u origin main
    ```
-2. Vào [vercel.com](https://vercel.com) -> Chọn **Add New Project** -> Chọn GitHub Repository vừa tạo -> Bấm **Deploy**.
+
+2. **Connect to Vercel**:
+   - Log into [vercel.com](https://vercel.com).
+   - Click **Add New** $\rightarrow$ **Project**.
+   - Select your GitHub repository `mindx-thuanan-ops`.
+   - The pre-configured [`vercel.json`](vercel.json) will automatically deploy the static application instantly.
+
+---
+
+## 🎨 Design Principles
+* **Non-AI Aesthetic**: Built with clean, human-designed functional aesthetics modeled after enterprise operations suites.
+* **100% Text Legibility**: High-contrast slate typography (`#0f172a` text on `#ffffff` backgrounds) optimized for extended office viewing.
+* **MindX Brand Compliance**: MindX Crimson Red primary accents (`#d91b24`), branded badges, and high-resolution Thuận An campus assets.
+
+---
+
+## 📄 License
+Internal Operations Software for **MindX Technology School - Thuận An Campus**. All rights reserved.

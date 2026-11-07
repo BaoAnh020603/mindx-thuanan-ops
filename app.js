@@ -1427,3 +1427,4 @@ class App {
 window.addEventListener("DOMContentLoaded", () => {
   window.app = new App();
 });
+
