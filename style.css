@@ -32,8 +32,9 @@
 }
 
 html {
-  font-size: 13.5px;
+  font-size: 13px;
   width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -43,9 +44,8 @@ body {
   line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden; /* CẤM TOÀN BỘ THANH CUỘN NGANG CỦA TRANG */
-  width: 100vw;
-  max-width: 100%;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .app-container {
@@ -53,7 +53,6 @@ body {
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
-  max-width: 100%;
 }
 
 /* ================= 1. HEADER CHUẨN TỶ LỆ ================= */
@@ -61,7 +60,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 20px;
+  padding: 8px 16px;
   background-color: var(--white);
   border-bottom: 2px solid var(--brand-red);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
@@ -74,18 +73,18 @@ body {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .brand-wrapper {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .brand-logo-img {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 6px;
   object-fit: cover;
   box-shadow: 0 2px 4px rgba(217, 27, 36, 0.3);
@@ -106,7 +105,7 @@ body {
 }
 
 .brand-logo-text {
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   font-weight: 900;
   color: var(--slate-900);
   letter-spacing: -0.5px;
@@ -114,22 +113,22 @@ body {
 
 .brand-x-char {
   color: var(--brand-red);
-  font-size: 1.45rem;
+  font-size: 1.4rem;
 }
 
 .campus-pill {
   background: var(--brand-red);
   color: var(--white);
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 900;
-  padding: 2px 6px;
+  padding: 2px 5px;
   border-radius: 4px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
 
 .brand-sub-title {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 800;
   color: var(--slate-600);
   text-transform: uppercase;
@@ -139,7 +138,7 @@ body {
 
 .divider-vertical {
   width: 1px;
-  height: 32px;
+  height: 30px;
   background-color: var(--slate-300);
 }
 
@@ -149,13 +148,13 @@ body {
 }
 
 .system-title-tag .title {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 800;
   color: var(--slate-900);
 }
 
 .system-title-tag .slogan {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: var(--brand-red);
 }
@@ -168,7 +167,7 @@ body {
 .quick-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 /* ================= 2. BUTTONS ================= */
@@ -176,10 +175,10 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 7px 13px;
-  border-radius: 6px;
-  font-size: 0.84rem;
+  gap: 5px;
+  padding: 6px 11px;
+  border-radius: 5px;
+  font-size: 0.82rem;
   font-weight: 800;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -189,8 +188,8 @@ body {
 }
 
 .btn svg {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   stroke-width: 2.4;
 }
 
@@ -198,7 +197,6 @@ body {
   background-color: var(--brand-red);
   color: var(--white);
   border-color: var(--brand-red-dark);
-  box-shadow: 0 1px 3px rgba(217, 27, 36, 0.25);
 }
 .btn-primary:hover {
   background-color: var(--brand-red-dark);
@@ -225,12 +223,12 @@ body {
   color: #b91c1c;
 }
 
-/* ================= 3. NAVIGATION TABS ================= */
+/* ================= 3. NAVIGATION TABS (CO DÃN THÔNG MINH, KHÔNG BAO GIỜ BỊ ĐÈ CHỮ) ================= */
 .sheets-tabs-nav {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  padding: 0 20px;
+  padding: 0 16px;
   background-color: #cbd5e1;
   border-bottom: 2px solid #94a3b8;
   width: 100%;
@@ -240,18 +238,20 @@ body {
   display: flex;
   gap: 4px;
   align-items: flex-end;
+  flex: 1;
+  min-width: 0;
 }
 
 .sheet-tab-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
+  gap: 6px;
+  padding: 9px 14px;
   background-color: #94a3b8;
   border: 1px solid #64748b;
   border-bottom: none;
-  border-radius: 7px 7px 0 0;
-  font-size: 0.9rem;
+  border-radius: 6px 6px 0 0;
+  font-size: 0.84rem;
   font-weight: 800;
   color: #ffffff;
   cursor: pointer;
@@ -262,9 +262,10 @@ body {
 }
 
 .sheet-tab-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   stroke-width: 2.4;
+  flex-shrink: 0;
 }
 
 .sheet-tab-btn:hover {
@@ -279,6 +280,7 @@ body {
   border-top: 3px solid var(--brand-red);
   border-bottom: 2px solid var(--white);
   font-weight: 900;
+  z-index: 5;
 }
 .sheet-tab-btn.active svg {
   color: var(--brand-red);
@@ -287,10 +289,11 @@ body {
 .tab-badge {
   background-color: var(--slate-700);
   color: var(--white);
-  font-size: 0.72rem;
-  padding: 1px 6px;
+  font-size: 0.7rem;
+  padding: 1px 5px;
   border-radius: 10px;
   font-weight: 800;
+  flex-shrink: 0;
 }
 .sheet-tab-btn.active .tab-badge {
   background-color: var(--brand-red);
@@ -300,26 +303,28 @@ body {
 .live-status {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.78rem;
+  gap: 5px;
+  font-size: 0.75rem;
   color: #15803d;
   font-weight: 800;
   padding-bottom: 6px;
+  padding-left: 10px;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .pulse-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background-color: #16a34a;
+  flex-shrink: 0;
 }
 
 /* ================= 4. MAIN WORKSPACE ================= */
 .main-workspace {
-  padding: 14px 20px 30px;
+  padding: 12px 16px 24px;
   width: 100%;
-  max-width: 100%;
 }
 
 .tab-content-panel {
@@ -330,17 +335,17 @@ body {
   display: block;
 }
 
-/* ================= 5. METRIC CARDS: CĂN ĐỀU 100% CHIỀU RỘNG ================= */
+/* ================= 5. METRIC CARDS ================= */
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr)); /* Ép đều 8 ô trên 1 dòng, không tràn */
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 12px;
   width: 100%;
 }
 
 .metrics-grid-classes {
-  grid-template-columns: repeat(6, minmax(0, 1fr)); /* Ép đều 6 ô trên 1 dòng */
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
 .metric-card {
@@ -350,7 +355,7 @@ body {
   padding: 8px 10px;
   border-left: 4px solid var(--slate-400);
   box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-  min-width: 0; /* Cho phép co lại theo màn hình */
+  min-width: 0;
 }
 
 .metric-primary   { border-left-color: #2563eb; }
@@ -373,7 +378,7 @@ body {
 }
 
 .metric-value {
-  font-size: 1.45rem;
+  font-size: 1.4rem;
   font-weight: 900;
   color: #000000;
   line-height: 1.1;
@@ -381,7 +386,7 @@ body {
 }
 
 .metric-sub {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 700;
   color: var(--slate-500);
   margin-top: 2px;
@@ -419,12 +424,12 @@ body {
 .search-box {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background-color: var(--slate-50);
   border: 1px solid var(--slate-300);
   border-radius: 5px;
   padding: 5px 10px;
-  width: 240px;
+  width: 220px;
 }
 .search-box:focus-within {
   border-color: var(--brand-red);
@@ -432,8 +437,8 @@ body {
 }
 
 .search-box svg {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   color: var(--slate-500);
   flex-shrink: 0;
 }
@@ -455,7 +460,7 @@ body {
 }
 
 .filter-select {
-  padding: 5px 10px;
+  padding: 5px 8px;
   font-size: 0.82rem;
   font-weight: 800;
   border-radius: 5px;
@@ -476,7 +481,25 @@ body {
   white-space: nowrap;
 }
 
-/* ================= 7. DATA SHEET TABLE (CHÍNH XÁC 100% CÁC CỘT) ================= */
+.notice-bubble {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0369a1;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+.notice-bubble svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+/* ================= 7. DATA SHEET TABLE ================= */
 .sheet-table-wrapper {
   background-color: var(--white);
   border: 1px solid var(--slate-300);
@@ -490,7 +513,7 @@ body {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.86rem;
+  font-size: 0.85rem;
   text-align: left;
 }
 
@@ -498,7 +521,7 @@ body {
   background-color: #e2e8f0;
   color: #000000;
   font-weight: 900;
-  padding: 9px 12px;
+  padding: 8px 10px;
   border-bottom: 2px solid #94a3b8;
   border-right: 1px solid #cbd5e1;
   white-space: nowrap;
@@ -509,7 +532,7 @@ body {
 }
 
 .sheet-table td {
-  padding: 8px 12px;
+  padding: 7px 10px;
   border-bottom: 1px solid #e2e8f0;
   border-right: 1px solid #e2e8f0;
   white-space: nowrap;
@@ -535,7 +558,7 @@ body {
 
 .sticky-col-2 {
   position: sticky;
-  left: 44px;
+  left: 40px;
   background-color: var(--white);
   z-index: 2;
 }
@@ -546,22 +569,22 @@ th.sticky-col, th.sticky-col-2 {
 }
 
 .col-num {
-  width: 44px;
+  width: 40px;
   text-align: center;
   color: var(--slate-600);
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 800;
 }
 
 .col-name {
   font-weight: 900;
   color: #000000;
-  min-width: 170px;
+  min-width: 160px;
 }
 
 .col-actions {
-  width: 80px;
+  width: 70px;
   text-align: center;
 }
 
@@ -569,9 +592,9 @@ th.sticky-col, th.sticky-col-2 {
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 7px;
+  padding: 2px 6px;
   border-radius: 4px;
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 800;
   line-height: 1.2;
 }
@@ -609,14 +632,14 @@ th.sticky-col, th.sticky-col-2 {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 .btn-icon {
   border: 1px solid var(--slate-300);
   background: var(--white);
   cursor: pointer;
-  padding: 4px;
+  padding: 3px;
   border-radius: 4px;
   color: var(--slate-700);
   display: inline-flex;
@@ -633,8 +656,8 @@ th.sticky-col, th.sticky-col-2 {
   border-color: #f87171;
 }
 .btn-icon svg {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
 }
 
 /* ================= 8. TAB 3: ATTENDANCE ================= */
@@ -643,10 +666,10 @@ th.sticky-col, th.sticky-col-2 {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
   background-color: var(--white);
   border: 1px solid var(--slate-300);
-  padding: 10px 14px;
+  padding: 8px 12px;
   border-radius: 6px;
   margin-bottom: 10px;
 }
@@ -654,33 +677,33 @@ th.sticky-col, th.sticky-col-2 {
 .attendance-filter-controls {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .class-selector-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .class-selector-group label {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 800;
   color: #000000;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 .class-selector-group label svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   color: var(--brand-red);
 }
 
 .class-picker-select {
-  padding: 6px 12px;
-  font-size: 0.9rem;
+  padding: 5px 10px;
+  font-size: 0.86rem;
   font-weight: 800;
   border-radius: 5px;
   border: 1.5px solid var(--slate-400);
@@ -697,11 +720,11 @@ th.sticky-col, th.sticky-col-2 {
 }
 
 .class-info-pill {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 800;
-  padding: 4px 10px;
+  padding: 3px 8px;
   background: var(--slate-100);
-  border-radius: 5px;
+  border-radius: 4px;
   color: #0f172a;
   border: 1px solid var(--slate-300);
 }
@@ -714,16 +737,16 @@ th.sticky-col, th.sticky-col-2 {
 }
 
 .legend-title {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 800;
   color: var(--slate-700);
 }
 
 .legend-badge {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 800;
-  padding: 3px 7px;
-  border-radius: 5px;
+  padding: 2px 6px;
+  border-radius: 4px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -736,14 +759,14 @@ th.sticky-col, th.sticky-col-2 {
 
 .col-session {
   text-align: center;
-  min-width: 60px;
-  padding: 7px 3px !important;
+  min-width: 58px;
+  padding: 6px 3px !important;
   font-weight: 900;
 }
 
 .session-date {
   display: block;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   color: var(--slate-600);
   font-weight: 700;
 }
@@ -753,7 +776,7 @@ th.sticky-col, th.sticky-col-2 {
   cursor: pointer;
   user-select: none;
   font-weight: 800;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   border-right: 1px solid var(--slate-200);
 }
 .att-cell:hover {
@@ -782,7 +805,7 @@ th.sticky-col, th.sticky-col-2 {
 .group-header {
   text-align: center;
   font-weight: 900;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
 }
 .group-header-1 {
   background-color: #e0f2fe !important;
@@ -796,17 +819,17 @@ th.sticky-col, th.sticky-col-2 {
 }
 
 .header-sub th {
-  top: 36px;
-  font-size: 0.76rem;
-  padding: 7px 8px;
+  top: 32px;
+  font-size: 0.74rem;
+  padding: 6px 8px;
 }
 
 .checkbox-center {
   text-align: center;
 }
 .custom-checkbox {
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
   accent-color: var(--brand-red);
   cursor: pointer;
 }
@@ -832,9 +855,9 @@ th.sticky-col, th.sticky-col-2 {
 
 .modal-dialog {
   background-color: var(--white);
-  border-radius: 10px;
+  border-radius: 8px;
   width: 100%;
-  max-width: 600px;
+  max-width: 580px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -846,13 +869,13 @@ th.sticky-col, th.sticky-col-2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 18px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--slate-200);
   background: var(--slate-50);
 }
 
 .modal-header h3 {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 900;
   color: #000000;
 }
@@ -860,20 +883,20 @@ th.sticky-col, th.sticky-col-2 {
 .modal-close {
   background: transparent;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   color: var(--slate-500);
   cursor: pointer;
 }
 
 .modal-body {
-  padding: 18px;
+  padding: 16px;
   overflow-y: auto;
 }
 
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
 .col-span-2 {
@@ -883,20 +906,20 @@ th.sticky-col, th.sticky-col-2 {
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .form-group label {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 800;
   color: #000000;
 }
 
 .form-group input, .form-group select {
-  padding: 8px 10px;
+  padding: 7px 9px;
   border: 1px solid var(--slate-300);
-  border-radius: 5px;
-  font-size: 0.88rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
   font-weight: 700;
   outline: none;
   color: #000000;
@@ -911,7 +934,7 @@ th.sticky-col, th.sticky-col-2 {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  padding: 12px 18px;
+  padding: 10px 16px;
   border-top: 1px solid var(--slate-200);
   background-color: var(--slate-50);
 }
@@ -925,7 +948,7 @@ th.sticky-col, th.sticky-col-2 {
   color: var(--white);
   padding: 10px 18px;
   border-radius: 6px;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   font-weight: 800;
   border-left: 4px solid var(--brand-red);
   z-index: 1000;
