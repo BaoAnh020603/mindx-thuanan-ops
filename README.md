@@ -1,10 +1,6 @@
 # MindX Technology School - Thuận An Campus Ops Management System
 
 <p align="center">
-  <img src="assets/mindx-thuanan-logo.jpg" alt="MindX Technology School - Thuận An Campus" width="160" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(217,27,36,0.35);">
-</p>
-
-<p align="center">
   <strong>High-performance, sheet-like operations dashboard designed specifically for MindX Thuận An Campus staff, teachers, customer support (CS), and academic management.</strong>
 </p>
 
