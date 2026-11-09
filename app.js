@@ -1222,4 +1222,103 @@ try {
 // Instantiate on DOM load
 window.addEventListener("DOMContentLoaded", () => {
   window.app = new App();
+  window.authManager = new AuthManager();
 });
+
+
+// ================= CS AUTHENTICATION CONTROLLER =================
+class AuthManager {
+  constructor() {
+    this.sessionKey = "mx_ta_auth_session";
+    this.overlay = document.getElementById("login-overlay");
+    this.form = document.getElementById("form-login");
+    this.staffIdInput = document.getElementById("login-staff-id");
+    this.passwordInput = document.getElementById("login-password");
+    this.errorMsg = document.getElementById("login-error-msg");
+    this.userPill = document.getElementById("user-header-pill");
+    this.userDisplayName = document.getElementById("user-display-name");
+    this.btnLogout = document.getElementById("btn-logout");
+
+    this.init();
+  }
+
+  init() {
+    const session = this.getSession();
+    if (session && session.isLoggedIn) {
+      this.showApp(session.staffId);
+    } else {
+      this.showLogin();
+    }
+
+    if (this.form) {
+      this.form.addEventListener("submit", (e) => this.handleLogin(e));
+    }
+
+    if (this.btnLogout) {
+      this.btnLogout.addEventListener("click", () => this.handleLogout());
+    }
+  }
+
+  getSession() {
+    try {
+      const data = sessionStorage.getItem(this.sessionKey) || localStorage.getItem(this.sessionKey);
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  handleLogin(e) {
+    e.preventDefault();
+    const staffId = this.staffIdInput.value.trim();
+    const password = this.passwordInput.value.trim();
+
+    // Verify Password: MindX@2024
+    if (password === "MindX@2024" && staffId.length > 0) {
+      const sessionData = {
+        isLoggedIn: true,
+        staffId: staffId,
+        role: "CS",
+        loginTime: new Date().toISOString()
+      };
+      sessionStorage.setItem(this.sessionKey, JSON.stringify(sessionData));
+      this.errorMsg.style.display = "none";
+      this.showApp(staffId);
+      if (window.app && window.app.showToast) {
+        window.app.showToast(`Chào mừng CS ${staffId} đăng nhập hệ thống!`);
+      }
+    } else {
+      this.errorMsg.style.display = "block";
+      this.errorMsg.textContent = "Mật khẩu không đúng! Vui lòng nhập mật khẩu CS MindX@2024";
+    }
+  }
+
+  handleLogout() {
+    if (confirm("Chị có chắc chắn muốn đăng xuất khỏi phiên làm việc không?")) {
+      sessionStorage.removeItem(this.sessionKey);
+      localStorage.removeItem(this.sessionKey);
+      this.showLogin();
+    }
+  }
+
+  showApp(staffId) {
+    if (this.overlay) this.overlay.style.display = "none";
+    if (this.userPill) {
+      this.userPill.style.display = "inline-flex";
+      if (this.userDisplayName) this.userDisplayName.textContent = staffId;
+    }
+    if (window.lucide && window.lucide.createIcons) {
+      window.lucide.createIcons();
+    }
+  }
+
+  showLogin() {
+    if (this.overlay) this.overlay.style.display = "flex";
+    if (this.userPill) this.userPill.style.display = "none";
+    if (this.staffIdInput) this.staffIdInput.focus();
+    if (window.lucide && window.lucide.createIcons) {
+      window.lucide.createIcons();
+    }
+  }
+}
+
