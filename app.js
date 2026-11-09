@@ -555,7 +555,8 @@ class App {
       const matchTrack = !trackFilter || c.trackCategory === trackFilter;
 
       const activeCount = this.store.getClassActiveCount(c.classCode);
-      const isFull = activeCount >= 6;
+      const targetCapacity = c.maxCapacity ? parseInt(c.maxCapacity) : 6;
+      const isFull = activeCount >= targetCapacity;
       let matchCapacity = true;
       if (capacityFilter === "Đủ sĩ số") matchCapacity = isFull;
       if (capacityFilter === "Thiếu sĩ số") matchCapacity = !isFull;
@@ -567,7 +568,10 @@ class App {
     const running = this.store.classes.filter(c => c.status === "Running").length;
     const pending = this.store.classes.filter(c => c.status === "Chờ lớp").length;
     const finished = this.store.classes.filter(c => c.status === "Finished").length;
-    const full = this.store.classes.filter(c => this.store.getClassActiveCount(c.classCode) >= 6).length;
+    const full = this.store.classes.filter(c => {
+      const target = c.maxCapacity ? parseInt(c.maxCapacity) : 6;
+      return this.store.getClassActiveCount(c.classCode) >= target;
+    }).length;
     const low = total - full;
 
     document.getElementById("metric-total-classes").textContent = total;
@@ -586,10 +590,11 @@ class App {
 
     this.tbodyClasses.innerHTML = filtered.map((c, idx) => {
       const activeCount = this.store.getClassActiveCount(c.classCode);
-      const isFull = activeCount >= 6;
+      const targetCapacity = c.maxCapacity ? parseInt(c.maxCapacity) : 6;
+      const isFull = activeCount >= targetCapacity;
       const capacityBadge = isFull
-        ? `<span class="badge badge-full">Đủ sĩ số (${activeCount})</span>`
-        : `<span class="badge badge-low">Thiếu sĩ số (${activeCount}/6)</span>`;
+        ? `<span class="badge badge-full">Đủ sĩ số (${activeCount}/${targetCapacity})</span>`
+        : `<span class="badge badge-low">Thiếu sĩ số (${activeCount}/${targetCapacity})</span>`;
 
       const trackBadge = c.trackCategory === "Coding" ? "badge-coding" : "badge-robotics";
 
@@ -659,6 +664,7 @@ class App {
       document.getElementById("class-trackCategory").value = c.trackCategory;
       document.getElementById("class-classCode").value = c.classCode;
       document.getElementById("class-studyFormat").value = c.studyFormat;
+      document.getElementById("class-maxCapacity").value = c.maxCapacity || "";
       document.getElementById("class-schedule").value = c.schedule || "";
       document.getElementById("class-startDate").value = c.startDate || "";
       document.getElementById("class-cp1Date").value = c.cp1Date || "";
@@ -683,6 +689,7 @@ class App {
       trackCategory: document.getElementById("class-trackCategory").value,
       classCode: document.getElementById("class-classCode").value.trim(),
       studyFormat: document.getElementById("class-studyFormat").value,
+      maxCapacity: document.getElementById("class-maxCapacity").value ? parseInt(document.getElementById("class-maxCapacity").value) : 6,
       schedule: document.getElementById("class-schedule").value.trim(),
       startDate: document.getElementById("class-startDate").value,
       cp1Date: document.getElementById("class-cp1Date").value,
@@ -781,6 +788,7 @@ class App {
 
     if (curClass) {
       const activeCount = this.store.getClassActiveCount(classCode);
+      const targetCapacity = curClass.maxCapacity ? parseInt(curClass.maxCapacity) : 6;
       const trackBadge = curClass.trackCategory === "Coding" ? "badge-coding" : "badge-robotics";
       const cpNote = isRobotics 
         ? "🤖 <b>Robotics:</b> CP1 (Buổi 4) | CP2 (Buổi 8) | Demo (Buổi 14)" 
@@ -792,7 +800,7 @@ class App {
         <span class="class-info-pill"><b>GV:</b> ${curClass.teacher || 'Chưa phân'}</span>
         <span class="class-info-pill"><b>TA:</b> ${curClass.ta || 'Chưa phân'}</span>
         <span class="class-info-pill"><b>CS:</b> ${curClass.cs || 'Chưa phân'}</span>
-        <span class="class-info-pill"><b>Sĩ số Active:</b> ${activeCount}</span>
+        <span class="class-info-pill"><b>Sĩ số:</b> ${activeCount}/${targetCapacity}</span>
         <span class="class-info-pill" style="color: #b91c1c; background:#fef2f2; border-color:#fecaca;">${cpNote}</span>
       `;
     } else {
@@ -1120,18 +1128,20 @@ class App {
 
     const wsClassesData = this.store.classes.map((c, idx) => {
       const activeCount = this.store.getClassActiveCount(c.classCode);
+      const targetCapacity = c.maxCapacity ? parseInt(c.maxCapacity) : 6;
       return {
         "STT": idx + 1,
         "Mã khối": c.trackCategory,
         "Mã lớp": c.classCode,
         "Mô hình học": c.studyFormat,
+        "Sĩ số mục tiêu": targetCapacity,
+        "Sĩ số hiện tại": activeCount,
+        "Tình trạng sĩ số": activeCount >= targetCapacity ? "Đủ sĩ số" : "Thiếu sĩ số",
         "Lịch học": c.schedule,
         "Ngày khai giảng": c.startDate,
         "Ngày CP1": c.cp1Date,
         "Ngày CP2": c.cp2Date,
         "Ngày Demo": c.demoDate,
-        "Sĩ số Active": activeCount,
-        "Tình trạng sĩ số": activeCount >= 6 ? "Đủ sĩ số" : "Thiếu sĩ số",
         "Giáo viên phụ trách": c.teacher,
         "Trợ giảng": c.ta,
         "CS phụ trách": c.cs,

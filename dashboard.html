@@ -236,12 +236,12 @@
           <div class="metric-card metric-info">
             <div class="metric-label">Đủ sĩ số</div>
             <div class="metric-value" id="metric-full-classes">0</div>
-            <div class="metric-sub text-info">Sĩ số Active ≥ 6 HV</div>
+            <div class="metric-sub text-info">Sĩ số đạt chuẩn</div>
           </div>
           <div class="metric-card metric-danger">
             <div class="metric-label">Thiếu sĩ số</div>
             <div class="metric-value" id="metric-low-classes">0</div>
-            <div class="metric-sub text-danger">Cần tuyển bổ sung (< 6)</div>
+            <div class="metric-sub text-danger">Chưa đạt chỉ tiêu sĩ số</div>
           </div>
         </div>
 
@@ -266,8 +266,8 @@
               </select>
               <select id="filter-class-capacity" class="filter-select">
                 <option value="">-- Sĩ số lớp --</option>
-                <option value="Đủ sĩ số">Đủ sĩ số (≥6)</option>
-                <option value="Thiếu sĩ số">Thiếu sĩ số (<6)</option>
+                <option value="Đủ sĩ số">Đủ sĩ số</option>
+                <option value="Thiếu sĩ số">Thiếu sĩ số</option>
               </select>
             </div>
           </div>
@@ -523,6 +523,10 @@
                 <option value="Hybrid">Hybrid</option>
                 <option value="Online">Online</option>
               </select>
+            </div>
+            <div class="form-group">
+              <label>Sĩ số lớp (Tối đa / Chỉ tiêu)</label>
+              <input type="number" id="class-maxCapacity" min="1" max="100" placeholder="VD: 8 hoặc 10 (mặc định 6)">
             </div>
             <div class="form-group">
               <label>Lịch học (Thứ, Ca giờ) *</label>
