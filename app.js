@@ -1289,7 +1289,7 @@ class AuthManager {
       }
     } else {
       this.errorMsg.style.display = "block";
-      this.errorMsg.textContent = "Mật khẩu không đúng! Vui lòng nhập mật khẩu CS MindX@2024";
+      this.errorMsg.textContent = "Mã nhân viên hoặc mật khẩu không chính xác!";
     }
   }
 
