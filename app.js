@@ -1226,7 +1226,8 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// ================= CS AUTHENTICATION CONTROLLER =================
+
+// ================= MINDX TPS AUTHENTICATION CONTROLLER =================
 class AuthManager {
   constructor() {
     this.sessionKey = "mx_ta_auth_session";
@@ -1239,24 +1240,80 @@ class AuthManager {
     this.userDisplayName = document.getElementById("user-display-name");
     this.userRoleTag = document.getElementById("user-role-tag");
     this.btnLogout = document.getElementById("btn-logout");
+    this.btnTogglePassword = document.getElementById("btn-toggle-password");
+    this.selectedRoleInput = document.getElementById("selected-role");
+    this.roleBtnCS = document.getElementById("role-btn-cs");
+    this.roleBtnAdmin = document.getElementById("role-btn-admin");
+    this.labelLoginId = document.getElementById("label-login-id");
+
+    this.currentRole = "CS"; // default role
 
     this.init();
   }
 
   init() {
+    // Check existing session
     const session = this.getSession();
     if (session && session.isLoggedIn) {
-      this.showApp(session.staffId, session.role || 'CS');
+      this.showApp(session.staffId, session.role || "CS");
     } else {
       this.showLogin();
     }
 
+    // Role switcher events
+    if (this.roleBtnCS) {
+      this.roleBtnCS.addEventListener("click", () => this.switchRole("CS"));
+    }
+    if (this.roleBtnAdmin) {
+      this.roleBtnAdmin.addEventListener("click", () => this.switchRole("ADMIN"));
+    }
+
+    // Password visibility toggle
+    if (this.btnTogglePassword && this.passwordInput) {
+      this.btnTogglePassword.addEventListener("click", () => {
+        const isPass = this.passwordInput.type === "password";
+        this.passwordInput.type = isPass ? "text" : "password";
+        const icon = document.getElementById("icon-eye");
+        if (icon) {
+          icon.setAttribute("data-lucide", isPass ? "eye-off" : "eye");
+          if (window.lucide && window.lucide.createIcons) {
+            window.lucide.createIcons();
+          }
+        }
+      });
+    }
+
+    // Form submit
     if (this.form) {
       this.form.addEventListener("submit", (e) => this.handleLogin(e));
     }
 
+    // Logout
     if (this.btnLogout) {
       this.btnLogout.addEventListener("click", () => this.handleLogout());
+    }
+  }
+
+  switchRole(role) {
+    this.currentRole = role;
+    if (this.selectedRoleInput) this.selectedRoleInput.value = role;
+
+    if (role === "CS") {
+      this.roleBtnCS.classList.add("active");
+      this.roleBtnAdmin.classList.remove("active");
+      if (this.labelLoginId) this.labelLoginId.textContent = "Email / Mã đăng nhập CS *";
+      if (this.staffIdInput) this.staffIdInput.value = "";
+    } else {
+      this.roleBtnAdmin.classList.add("active");
+      this.roleBtnCS.classList.remove("active");
+      if (this.labelLoginId) this.labelLoginId.textContent = "Tài khoản Quản lý (Admin) *";
+      if (this.staffIdInput) this.staffIdInput.value = "admin";
+    }
+
+    if (this.errorMsg) this.errorMsg.style.display = "none";
+    if (this.passwordInput) {
+      this.passwordInput.value = "";
+      this.passwordInput.focus();
     }
   }
 
@@ -1271,28 +1328,47 @@ class AuthManager {
 
   handleLogin(e) {
     e.preventDefault();
-    const staffId = this.staffIdInput.value.trim();
+    const loginId = this.staffIdInput.value.trim();
     const password = this.passwordInput.value.trim();
+    const rememberMe = document.getElementById("remember-me")?.checked;
 
-    // 1. Tài khoản Quản Trị Viên (Admin): admin / MindX@Admin2024
-    const isAdmin = (staffId.toLowerCase() === "admin" && password === "MindX@Admin2024");
-    // 2. Tài khoản CS & Giáo vụ vận hành: bất kỳ mã nhân viên / MindX@2024
-    const isCS = (password === "MindX@2024" && staffId.length > 0);
+    let isValid = false;
+    let userRole = this.currentRole;
+    let displayName = loginId;
 
-    if (isAdmin || isCS) {
-      const role = isAdmin ? "ADMIN" : "CS";
-      const displayName = isAdmin ? "Administrator" : staffId;
+    if (userRole === "ADMIN") {
+      // Admin account
+      if (loginId.toLowerCase() === "admin" && password === "MindX@Admin2024") {
+        isValid = true;
+        displayName = "Administrator";
+      }
+    } else {
+      // CS Role account
+      if (password === "MindX@2024" && loginId.length > 0) {
+        isValid = true;
+        displayName = loginId;
+      }
+    }
+
+    if (isValid) {
       const sessionData = {
         isLoggedIn: true,
         staffId: displayName,
-        role: role,
+        role: userRole,
         loginTime: new Date().toISOString()
       };
+      
       sessionStorage.setItem(this.sessionKey, JSON.stringify(sessionData));
+      if (rememberMe) {
+        localStorage.setItem(this.sessionKey, JSON.stringify(sessionData));
+      } else {
+        localStorage.removeItem(this.sessionKey);
+      }
+
       this.errorMsg.style.display = "none";
-      this.showApp(displayName, role);
+      this.showApp(displayName, userRole);
       if (window.app && window.app.showToast) {
-        window.app.showToast(`Đăng nhập thành công với quyền ${role}!`);
+        window.app.showToast(`Chào mừng ${displayName} (${userRole}) đăng nhập thành công!`);
       }
     } else {
       this.errorMsg.style.display = "block";
@@ -1336,4 +1412,3 @@ class AuthManager {
     }
   }
 }
-
