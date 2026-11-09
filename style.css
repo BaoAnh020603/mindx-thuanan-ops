@@ -382,6 +382,10 @@ body {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
+.metrics-grid-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .metric-card {
   background-color: var(--white);
   border: 1px solid var(--slate-300);
