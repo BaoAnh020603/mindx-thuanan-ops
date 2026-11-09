@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng Nhập - MindX Thuận An Operations System</title>
+  <link rel="icon" type="image/jpeg" href="assets/mindx-logo-new.jpg">
+  <link rel="stylesheet" href="style.css">
+  <!-- Lucide Icons -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <style>
+    /* Full standalone page background */
+    body, html {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .tps-standalone-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+      background: #f1f5f9;
+    }
+  </style>
+</head>
+<body>
+  <div class="tps-standalone-container">
+    <div class="tps-login-card">
+      <!-- Cột bên trái: Màu đỏ thương hiệu MindX -->
+      <div class="tps-left-banner">
+        <div class="tps-brand-badge">
+          <img src="assets/mindx-logo-new.jpg" alt="MindX Technology School" class="tps-logo-img">
+          <div class="tps-brand-text">
+            <span class="tps-mindx-title">mind<span class="brand-x-char">X</span></span>
+            <span class="tps-mindx-sub">Technology School</span>
+          </div>
+        </div>
+
+        <div class="tps-hero-content">
+          <h2 class="tps-hero-title">Thuận An<br>Operations System<br>(TOS)</h2>
+          <p class="tps-hero-desc">
+            Hệ thống quản lý thông tin học viên, theo dõi tiến độ đào tạo, xử lý yêu cầu tra cứu và điểm danh lớp học cơ sở Thuận An.
+          </p>
+        </div>
+
+        <div class="tps-left-footer">
+          Operations Team &bull; Thuận An Campus
+        </div>
+      </div>
+
+      <!-- Cột bên phải: Form đăng nhập chuẩn theo ảnh mẫu TPS -->
+      <div class="tps-right-form">
+        <div class="tps-form-header">
+          <h3 class="tps-school-name">MindX Technology School</h3>
+          <h4 class="tps-welcome-title">Chào mừng bạn đến với TOS</h4>
+          <p class="tps-role-prompt">Lựa chọn vai trò của bạn để tiếp tục</p>
+
+          <!-- 2 Nút chọn Role: CS và Admin -->
+          <div class="tps-role-selector">
+            <button type="button" class="tps-role-btn active" data-role="CS" id="role-btn-cs">
+              CS (Giáo vụ)
+            </button>
+            <button type="button" class="tps-role-btn" data-role="ADMIN" id="role-btn-admin">
+              Quản lý (Admin)
+            </button>
+          </div>
+
+          <div class="tps-auth-subtext" id="tps-auth-subtext">
+            Đăng nhập hệ thống vận hành nội bộ <b>Thuận An Campus</b>
+          </div>
+        </div>
+
+        <div class="login-error" id="login-error-msg" style="display:none; margin-bottom:12px;">
+          Mã đăng nhập hoặc mật khẩu không chính xác!
+        </div>
+
+        <form id="form-login">
+          <input type="hidden" id="selected-role" value="CS">
+
+          <div class="tps-input-group">
+            <label id="label-login-id">Email / Mã đăng nhập *</label>
+            <input type="text" id="login-staff-id" required autocomplete="username">
+          </div>
+
+          <div class="tps-input-group">
+            <label>Mật khẩu *</label>
+            <div class="tps-password-wrapper">
+              <input type="password" id="login-password" required autocomplete="current-password">
+              <button type="button" class="btn-toggle-eye" id="btn-toggle-password" title="Hiện/ẩn mật khẩu">
+                <i data-lucide="eye" id="icon-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="tps-form-options">
+            <label class="tps-remember-me">
+              <input type="checkbox" id="remember-me" checked>
+              <span>Lưu tài khoản</span>
+            </label>
+          </div>
+
+          <button type="submit" class="tps-btn-submit" id="btn-submit-login">
+            Đăng nhập
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Independent Login Page Logic
+    const sessionKey = "mx_ta_auth_session";
+
+    // If already logged in, redirect straight to index.html
+    try {
+      const existing = sessionStorage.getItem(sessionKey) || localStorage.getItem(sessionKey);
+      if (existing) {
+        const parsed = JSON.parse(existing);
+        if (parsed.isLoggedIn) {
+          window.location.replace("index.html");
+        }
+      }
+    } catch(e) {}
+
+    let currentRole = "CS";
+    const roleBtnCS = document.getElementById("role-btn-cs");
+    const roleBtnAdmin = document.getElementById("role-btn-admin");
+    const labelLoginId = document.getElementById("label-login-id");
+    const staffIdInput = document.getElementById("login-staff-id");
+    const passwordInput = document.getElementById("login-password");
+    const errorMsg = document.getElementById("login-error-msg");
+    const btnTogglePassword = document.getElementById("btn-toggle-password");
+    const formLogin = document.getElementById("form-login");
+
+    function switchRole(role) {
+      currentRole = role;
+      if (role === "CS") {
+        roleBtnCS.classList.add("active");
+        roleBtnAdmin.classList.remove("active");
+        labelLoginId.textContent = "Email / Mã đăng nhập CS *";
+        staffIdInput.value = "";
+      } else {
+        roleBtnAdmin.classList.add("active");
+        roleBtnCS.classList.remove("active");
+        labelLoginId.textContent = "Tài khoản Quản lý (Admin) *";
+        staffIdInput.value = "admin";
+      }
+      errorMsg.style.display = "none";
+      passwordInput.value = "";
+      passwordInput.focus();
+    }
+
+    roleBtnCS.addEventListener("click", () => switchRole("CS"));
+    roleBtnAdmin.addEventListener("click", () => switchRole("ADMIN"));
+
+    // Toggle eye
+    btnTogglePassword.addEventListener("click", () => {
+      const isPass = passwordInput.type === "password";
+      passwordInput.type = isPass ? "text" : "password";
+      const icon = document.getElementById("icon-eye");
+      if (icon) {
+        icon.setAttribute("data-lucide", isPass ? "eye-off" : "eye");
+        if (window.lucide && window.lucide.createIcons) {
+          window.lucide.createIcons();
+        }
+      }
+    });
+
+    // Handle Login
+    formLogin.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const loginId = staffIdInput.value.trim();
+      const password = passwordInput.value.trim();
+      const rememberMe = document.getElementById("remember-me").checked;
+
+      let isValid = false;
+      let displayName = loginId;
+
+      if (currentRole === "ADMIN") {
+        if (loginId.toLowerCase() === "admin" && password === "MindX@Admin2024") {
+          isValid = true;
+          displayName = "Administrator";
+        }
+      } else {
+        if (password === "MindX@2024" && loginId.length > 0) {
+          isValid = true;
+          displayName = loginId;
+        }
+      }
+
+      if (isValid) {
+        const sessionData = {
+          isLoggedIn: true,
+          staffId: displayName,
+          role: currentRole,
+          loginTime: new Date().toISOString()
+        };
+        sessionStorage.setItem(sessionKey, JSON.stringify(sessionData));
+        if (rememberMe) {
+          localStorage.setItem(sessionKey, JSON.stringify(sessionData));
+        } else {
+          localStorage.removeItem(sessionKey);
+        }
+        // Redirect to main ops dashboard
+        window.location.replace("index.html");
+      } else {
+        errorMsg.style.display = "block";
+        errorMsg.textContent = "Mã đăng nhập hoặc mật khẩu không chính xác!";
+      }
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      if (window.lucide && window.lucide.createIcons) {
+        window.lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>

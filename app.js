@@ -1227,186 +1227,61 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 
-// ================= MINDX TPS AUTHENTICATION CONTROLLER =================
+
+// ================= SESSION GUARD CONTROLLER =================
 class AuthManager {
   constructor() {
     this.sessionKey = "mx_ta_auth_session";
-    this.overlay = document.getElementById("login-overlay");
-    this.form = document.getElementById("form-login");
-    this.staffIdInput = document.getElementById("login-staff-id");
-    this.passwordInput = document.getElementById("login-password");
-    this.errorMsg = document.getElementById("login-error-msg");
     this.userPill = document.getElementById("user-header-pill");
     this.userDisplayName = document.getElementById("user-display-name");
     this.userRoleTag = document.getElementById("user-role-tag");
     this.btnLogout = document.getElementById("btn-logout");
-    this.btnTogglePassword = document.getElementById("btn-toggle-password");
-    this.selectedRoleInput = document.getElementById("selected-role");
-    this.roleBtnCS = document.getElementById("role-btn-cs");
-    this.roleBtnAdmin = document.getElementById("role-btn-admin");
-    this.labelLoginId = document.getElementById("label-login-id");
 
-    this.currentRole = "CS"; // default role
-
-    this.init();
+    this.checkSession();
   }
 
-  init() {
-    // Check existing session
-    const session = this.getSession();
-    if (session && session.isLoggedIn) {
-      this.showApp(session.staffId, session.role || "CS");
-    } else {
-      this.showLogin();
-    }
-
-    // Role switcher events
-    if (this.roleBtnCS) {
-      this.roleBtnCS.addEventListener("click", () => this.switchRole("CS"));
-    }
-    if (this.roleBtnAdmin) {
-      this.roleBtnAdmin.addEventListener("click", () => this.switchRole("ADMIN"));
-    }
-
-    // Password visibility toggle
-    if (this.btnTogglePassword && this.passwordInput) {
-      this.btnTogglePassword.addEventListener("click", () => {
-        const isPass = this.passwordInput.type === "password";
-        this.passwordInput.type = isPass ? "text" : "password";
-        const icon = document.getElementById("icon-eye");
-        if (icon) {
-          icon.setAttribute("data-lucide", isPass ? "eye-off" : "eye");
-          if (window.lucide && window.lucide.createIcons) {
-            window.lucide.createIcons();
-          }
-        }
-      });
-    }
-
-    // Form submit
-    if (this.form) {
-      this.form.addEventListener("submit", (e) => this.handleLogin(e));
-    }
-
-    // Logout
-    if (this.btnLogout) {
-      this.btnLogout.addEventListener("click", () => this.handleLogout());
-    }
-  }
-
-  switchRole(role) {
-    this.currentRole = role;
-    if (this.selectedRoleInput) this.selectedRoleInput.value = role;
-
-    if (role === "CS") {
-      this.roleBtnCS.classList.add("active");
-      this.roleBtnAdmin.classList.remove("active");
-      if (this.labelLoginId) this.labelLoginId.textContent = "Email / Mã đăng nhập CS *";
-      if (this.staffIdInput) this.staffIdInput.value = "";
-    } else {
-      this.roleBtnAdmin.classList.add("active");
-      this.roleBtnCS.classList.remove("active");
-      if (this.labelLoginId) this.labelLoginId.textContent = "Tài khoản Quản lý (Admin) *";
-      if (this.staffIdInput) this.staffIdInput.value = "admin";
-    }
-
-    if (this.errorMsg) this.errorMsg.style.display = "none";
-    if (this.passwordInput) {
-      this.passwordInput.value = "";
-      this.passwordInput.focus();
-    }
-  }
-
-  getSession() {
+  checkSession() {
+    let session = null;
     try {
       const data = sessionStorage.getItem(this.sessionKey) || localStorage.getItem(this.sessionKey);
-      return data ? JSON.parse(data) : null;
+      session = data ? JSON.parse(data) : null;
     } catch (e) {
-      return null;
-    }
-  }
-
-  handleLogin(e) {
-    e.preventDefault();
-    const loginId = this.staffIdInput.value.trim();
-    const password = this.passwordInput.value.trim();
-    const rememberMe = document.getElementById("remember-me")?.checked;
-
-    let isValid = false;
-    let userRole = this.currentRole;
-    let displayName = loginId;
-
-    if (userRole === "ADMIN") {
-      // Admin account
-      if (loginId.toLowerCase() === "admin" && password === "MindX@Admin2024") {
-        isValid = true;
-        displayName = "Administrator";
-      }
-    } else {
-      // CS Role account
-      if (password === "MindX@2024" && loginId.length > 0) {
-        isValid = true;
-        displayName = loginId;
-      }
+      session = null;
     }
 
-    if (isValid) {
-      const sessionData = {
-        isLoggedIn: true,
-        staffId: displayName,
-        role: userRole,
-        loginTime: new Date().toISOString()
-      };
-      
-      sessionStorage.setItem(this.sessionKey, JSON.stringify(sessionData));
-      if (rememberMe) {
-        localStorage.setItem(this.sessionKey, JSON.stringify(sessionData));
-      } else {
-        localStorage.removeItem(this.sessionKey);
-      }
-
-      this.errorMsg.style.display = "none";
-      this.showApp(displayName, userRole);
-      if (window.app && window.app.showToast) {
-        window.app.showToast(`Chào mừng ${displayName} (${userRole}) đăng nhập thành công!`);
-      }
-    } else {
-      this.errorMsg.style.display = "block";
-      this.errorMsg.textContent = "Tài khoản hoặc mật khẩu không chính xác!";
+    if (!session || !session.isLoggedIn) {
+      // Not logged in -> Redirect to separate login.html
+      window.location.replace("login.html");
+      return;
     }
-  }
 
-  handleLogout() {
-    if (confirm("Chị có chắc chắn muốn đăng xuất khỏi phiên làm việc không?")) {
-      sessionStorage.removeItem(this.sessionKey);
-      localStorage.removeItem(this.sessionKey);
-      this.showLogin();
-    }
-  }
-
-  showApp(staffId, role = "CS") {
-    if (this.overlay) this.overlay.style.display = "none";
+    // Logged in -> Update header pill
     if (this.userPill) {
       this.userPill.style.display = "inline-flex";
-      if (this.userDisplayName) this.userDisplayName.textContent = staffId;
+      if (this.userDisplayName) {
+        this.userDisplayName.textContent = session.staffId;
+      }
       if (this.userRoleTag) {
-        this.userRoleTag.textContent = `ROLE: ${role}`;
-        if (role === "ADMIN") {
+        this.userRoleTag.textContent = `ROLE: ${session.role || 'CS'}`;
+        if (session.role === "ADMIN") {
           this.userRoleTag.style.backgroundColor = "#0f172a";
         } else {
           this.userRoleTag.style.backgroundColor = "var(--brand-red)";
         }
       }
     }
-    if (window.lucide && window.lucide.createIcons) {
-      window.lucide.createIcons();
-    }
-  }
 
-  showLogin() {
-    if (this.overlay) this.overlay.style.display = "flex";
-    if (this.userPill) this.userPill.style.display = "none";
-    if (this.staffIdInput) this.staffIdInput.focus();
+    // Logout
+    if (this.btnLogout) {
+      this.btnLogout.addEventListener("click", () => {
+        if (confirm("Chị có chắc chắn muốn đăng xuất không?")) {
+          sessionStorage.removeItem(this.sessionKey);
+          localStorage.removeItem(this.sessionKey);
+          window.location.replace("login.html");
+        }
+      });
+    }
+
     if (window.lucide && window.lucide.createIcons) {
       window.lucide.createIcons();
     }
