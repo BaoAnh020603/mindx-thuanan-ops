@@ -1251,7 +1251,7 @@ class AuthManager {
 
     if (!session || !session.isLoggedIn) {
       // Not logged in -> Redirect to separate login.html
-      window.location.replace("login.html");
+      window.location.replace("index.html");
       return;
     }
 
@@ -1277,7 +1277,7 @@ class AuthManager {
         if (confirm("Chị có chắc chắn muốn đăng xuất không?")) {
           sessionStorage.removeItem(this.sessionKey);
           localStorage.removeItem(this.sessionKey);
-          window.location.replace("login.html");
+          window.location.replace("index.html");
         }
       });
     }
