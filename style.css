@@ -60,7 +60,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 16px;
+  padding: 10px 16px;
   background-color: var(--white);
   border-bottom: 2px solid var(--brand-red);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
@@ -68,6 +68,7 @@ body {
   top: 0;
   z-index: 50;
   width: 100%;
+  min-height: 56px;
 }
 
 .header-left {
@@ -162,52 +163,64 @@ body {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 10px;
 }
 
 .quick-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
-/* User Badge & Logout in Header */
+/* User Badge & Logout in Header - Perfectly Sized & Aligned */
 .user-info-pill {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background-color: #f1f5f9;
+  gap: 7px;
+  background-color: #f8fafc;
   border: 1px solid #cbd5e1;
   padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.8rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
   font-weight: 800;
-  color: #1e293b;
+  color: #0f172a;
+  height: 33px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
 
 .user-info-pill .role-tag {
   background-color: var(--brand-red);
   color: #ffffff;
-  padding: 1px 6px;
-  border-radius: 10px;
-  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.68rem;
   font-weight: 900;
+  letter-spacing: 0.3px;
 }
 
 .btn-logout {
-  background: transparent;
-  border: none;
-  color: #64748b;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: var(--brand-red);
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  padding: 4px;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
   border-radius: 4px;
   transition: all 0.15s;
+  padding: 0;
+  margin-left: 2px;
+}
+.btn-logout svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.5;
 }
 .btn-logout:hover {
-  color: var(--brand-red);
-  background-color: #fee2e2;
+  background-color: var(--brand-red);
+  color: #ffffff;
+  border-color: var(--brand-red);
 }
 
 /* ================= 2. BUTTONS ================= */
@@ -215,9 +228,10 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 6px 11px;
-  border-radius: 5px;
+  gap: 6px;
+  padding: 0 12px;
+  height: 33px;
+  border-radius: 6px;
   font-size: 0.82rem;
   font-weight: 800;
   cursor: pointer;
@@ -266,7 +280,6 @@ body {
 /* ================= 3. NAVIGATION TABS (CĂN LỀ THẲNG HÀNG 16PX) ================= */
 .sheets-tabs-nav {
   display: flex;
-  justify-content: flex-start;
   align-items: flex-end;
   padding: 0 16px;
   background-color: #cbd5e1;
@@ -275,21 +288,24 @@ body {
 }
 
 .tabs-list {
-  display: flex;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
   align-items: flex-end;
 }
 
 .sheet-tab-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 9px 16px;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
   background-color: #94a3b8;
-  border: 1px solid #64748b;
+  border: 1.5px solid #64748b;
   border-bottom: none;
   border-radius: 6px 6px 0 0;
-  font-size: 0.84rem;
+  font-size: 0.85rem;
   font-weight: 800;
   color: #ffffff;
   cursor: pointer;
@@ -297,6 +313,7 @@ body {
   position: relative;
   bottom: -2px;
   white-space: nowrap;
+  width: 100%;
 }
 
 .sheet-tab-btn svg {
