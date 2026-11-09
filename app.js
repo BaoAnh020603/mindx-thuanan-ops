@@ -217,7 +217,7 @@ class App {
     this.btnExportExcel.addEventListener("click", () => this.exportToExcel());
 
     // Import Excel/JSON
-    this.btnImportExcel.addEventListener("click", () => this.fileImport.click());
+    if (this.btnImportExcel) this.btnImportExcel.addEventListener("click", () => this.fileImport.click());
     this.fileImport.addEventListener("change", (e) => this.handleFileImport(e));
 
     // Students filter triggers
