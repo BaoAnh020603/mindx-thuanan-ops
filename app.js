@@ -1237,6 +1237,7 @@ class AuthManager {
     this.errorMsg = document.getElementById("login-error-msg");
     this.userPill = document.getElementById("user-header-pill");
     this.userDisplayName = document.getElementById("user-display-name");
+    this.userRoleTag = document.getElementById("user-role-tag");
     this.btnLogout = document.getElementById("btn-logout");
 
     this.init();
@@ -1245,7 +1246,7 @@ class AuthManager {
   init() {
     const session = this.getSession();
     if (session && session.isLoggedIn) {
-      this.showApp(session.staffId);
+      this.showApp(session.staffId, session.role || 'CS');
     } else {
       this.showLogin();
     }
@@ -1273,23 +1274,29 @@ class AuthManager {
     const staffId = this.staffIdInput.value.trim();
     const password = this.passwordInput.value.trim();
 
-    // Verify Password: MindX@2024
-    if (password === "MindX@2024" && staffId.length > 0) {
+    // 1. Tài khoản Quản Trị Viên (Admin): admin / MindX@Admin2024
+    const isAdmin = (staffId.toLowerCase() === "admin" && password === "MindX@Admin2024");
+    // 2. Tài khoản CS & Giáo vụ vận hành: bất kỳ mã nhân viên / MindX@2024
+    const isCS = (password === "MindX@2024" && staffId.length > 0);
+
+    if (isAdmin || isCS) {
+      const role = isAdmin ? "ADMIN" : "CS";
+      const displayName = isAdmin ? "Administrator" : staffId;
       const sessionData = {
         isLoggedIn: true,
-        staffId: staffId,
-        role: "CS",
+        staffId: displayName,
+        role: role,
         loginTime: new Date().toISOString()
       };
       sessionStorage.setItem(this.sessionKey, JSON.stringify(sessionData));
       this.errorMsg.style.display = "none";
-      this.showApp(staffId);
+      this.showApp(displayName, role);
       if (window.app && window.app.showToast) {
-        window.app.showToast(`Chào mừng CS ${staffId} đăng nhập hệ thống!`);
+        window.app.showToast(`Đăng nhập thành công với quyền ${role}!`);
       }
     } else {
       this.errorMsg.style.display = "block";
-      this.errorMsg.textContent = "Mã nhân viên hoặc mật khẩu không chính xác!";
+      this.errorMsg.textContent = "Tài khoản hoặc mật khẩu không chính xác!";
     }
   }
 
@@ -1301,11 +1308,19 @@ class AuthManager {
     }
   }
 
-  showApp(staffId) {
+  showApp(staffId, role = "CS") {
     if (this.overlay) this.overlay.style.display = "none";
     if (this.userPill) {
       this.userPill.style.display = "inline-flex";
       if (this.userDisplayName) this.userDisplayName.textContent = staffId;
+      if (this.userRoleTag) {
+        this.userRoleTag.textContent = `ROLE: ${role}`;
+        if (role === "ADMIN") {
+          this.userRoleTag.style.backgroundColor = "#0f172a";
+        } else {
+          this.userRoleTag.style.backgroundColor = "var(--brand-red)";
+        }
+      }
     }
     if (window.lucide && window.lucide.createIcons) {
       window.lucide.createIcons();

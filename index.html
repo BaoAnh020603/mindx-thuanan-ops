@@ -38,7 +38,7 @@
       <div class="header-right">
         <div class="quick-actions">
         <div class="user-info-pill" id="user-header-pill" style="display:none;">
-          <span class="role-tag">ROLE: CS</span>
+          <span class="role-tag" id="user-role-tag">ROLE: CS</span>
           <span id="user-display-name">NV-CS</span>
           <button id="btn-logout" class="btn-logout" title="Đăng xuất"><i data-lucide="log-out"></i></button>
         </div>
@@ -571,7 +571,7 @@
       </div>
       <div class="login-body">
         <div class="login-role-badge">
-          <i data-lucide="shield-check"></i> Phân quyền: Customer Support (CS)
+          <i data-lucide="shield-check"></i> Phân quyền: CS & Quản Trị Viên (Admin)
         </div>
 
         <div class="login-error" id="login-error-msg">
@@ -580,7 +580,7 @@
 
         <form id="form-login">
           <div class="login-field">
-            <label>Mã Nhân Viên CS *</label>
+            <label>Tài Khoản / Mã Nhân Viên *</label>
             <div class="login-input-wrapper">
               <input type="text" id="login-staff-id" required autocomplete="username">
             </div>
