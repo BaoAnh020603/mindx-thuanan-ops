@@ -1225,10 +1225,7 @@ window.addEventListener("DOMContentLoaded", () => {
   window.authManager = new AuthManager();
 });
 
-
-
-
-// ================= SESSION GUARD CONTROLLER =================
+// ================= SESSION & AUTH GUARD =================
 class AuthManager {
   constructor() {
     this.sessionKey = "mx_ta_auth_session";
@@ -1250,12 +1247,10 @@ class AuthManager {
     }
 
     if (!session || !session.isLoggedIn) {
-      // Not logged in -> Redirect to separate login.html
       window.location.replace("index.html");
       return;
     }
 
-    // Logged in -> Update header pill
     if (this.userPill) {
       this.userPill.style.display = "inline-flex";
       if (this.userDisplayName) {
@@ -1271,7 +1266,6 @@ class AuthManager {
       }
     }
 
-    // Logout
     if (this.btnLogout) {
       this.btnLogout.addEventListener("click", () => {
         if (confirm("Chị có chắc chắn muốn đăng xuất không?")) {
