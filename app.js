@@ -16,6 +16,8 @@ class Store {
     this.students = this.load("mx_ta_students", INITIAL_STUDENTS);
     this.attendance = this.load("mx_ta_attendance", INITIAL_ATTENDANCE);
     this.makeup = this.load("mx_ta_makeup", []);
+    this.waiting = this.load("mx_ta_waiting", []);
+    this.reserve = this.load("mx_ta_reserve", []);
 
     // Sync makeup table with attendance absences on initial load
     this.syncMakeupFromAttendance();
@@ -36,6 +38,8 @@ class Store {
     localStorage.setItem("mx_ta_students", JSON.stringify(this.students));
     localStorage.setItem("mx_ta_attendance", JSON.stringify(this.attendance));
     localStorage.setItem("mx_ta_makeup", JSON.stringify(this.makeup));
+    localStorage.setItem("mx_ta_waiting", JSON.stringify(this.waiting));
+    localStorage.setItem("mx_ta_reserve", JSON.stringify(this.reserve));
   }
 
   clearAll() {
@@ -43,6 +47,8 @@ class Store {
     this.students = [];
     this.attendance = {};
     this.makeup = [];
+    this.waiting = [];
+    this.reserve = [];
     this.save();
   }
 
@@ -138,7 +144,9 @@ class App {
       students: document.getElementById("tab-students"),
       classes: document.getElementById("tab-classes"),
       attendance: document.getElementById("tab-attendance"),
-      makeup: document.getElementById("tab-makeup")
+      makeup: document.getElementById("tab-makeup"),
+      waiting: document.getElementById("tab-waiting"),
+      reserve: document.getElementById("tab-reserve")
     };
 
     // Header buttons
@@ -176,11 +184,31 @@ class App {
     this.filterMakeupStatus = document.getElementById("filter-makeup-status");
     this.tbodyMakeup = document.getElementById("tbody-makeup");
 
+    // Waiting (Chờ lớp)
+    this.searchWaiting = document.getElementById("search-waiting");
+    this.filterWaitingType = document.getElementById("filter-waiting-type");
+    this.filterWaitingStatus = document.getElementById("filter-waiting-status");
+    this.filterWaitingTime = document.getElementById("filter-waiting-time");
+    this.tbodyWaiting = document.getElementById("tbody-waiting");
+    this.waitingTableCount = document.getElementById("waiting-table-count");
+
+    // Reserve (Bảo lưu)
+    this.searchReserve = document.getElementById("search-reserve");
+    this.filterReserveType = document.getElementById("filter-reserve-type");
+    this.filterReserveStatus = document.getElementById("filter-reserve-status");
+    this.filterReserveUrgency = document.getElementById("filter-reserve-urgency");
+    this.tbodyReserve = document.getElementById("tbody-reserve");
+    this.reserveTableCount = document.getElementById("reserve-table-count");
+
     // Modals
     this.modalStudent = document.getElementById("modal-student");
     this.formStudent = document.getElementById("form-student");
     this.modalClass = document.getElementById("modal-class");
     this.formClass = document.getElementById("form-class");
+    this.modalWaiting = document.getElementById("modal-waiting");
+    this.formWaiting = document.getElementById("form-waiting");
+    this.modalReserve = document.getElementById("modal-reserve");
+    this.formReserve = document.getElementById("form-reserve");
     this.toast = document.getElementById("toast");
   }
 
@@ -201,6 +229,10 @@ class App {
         this.openClassModal();
       } else if (this.currentTab === "makeup") {
         this.openAddMakeupRecord();
+      } else if (this.currentTab === "waiting") {
+        this.openWaitingModal();
+      } else if (this.currentTab === "reserve") {
+        this.openReserveModal();
       }
     });
 
@@ -241,6 +273,16 @@ class App {
       el.addEventListener("input", () => this.renderMakeup());
     });
 
+    // Waiting filters
+    [this.searchWaiting, this.filterWaitingType, this.filterWaitingStatus, this.filterWaitingTime].forEach(el => {
+      if (el) el.addEventListener("input", () => this.renderWaiting());
+    });
+
+    // Reserve filters
+    [this.searchReserve, this.filterReserveType, this.filterReserveStatus, this.filterReserveUrgency].forEach(el => {
+      if (el) el.addEventListener("input", () => this.renderReserve());
+    });
+
     // Modal close triggers
     document.querySelectorAll("[data-close]").forEach(el => {
       el.addEventListener("click", () => {
@@ -252,6 +294,8 @@ class App {
     // Modal forms submit
     this.formStudent.addEventListener("submit", (e) => this.handleStudentSubmit(e));
     this.formClass.addEventListener("submit", (e) => this.handleClassSubmit(e));
+    if (this.formWaiting) this.formWaiting.addEventListener("submit", (e) => this.handleWaitingSubmit(e));
+    if (this.formReserve) this.formReserve.addEventListener("submit", (e) => this.handleReserveSubmit(e));
   }
 
   showToast(message) {
@@ -282,6 +326,12 @@ class App {
     } else if (tab === "makeup") {
       this.btnAddRow.style.display = "inline-flex";
       this.addBtnText.textContent = "Thêm Bản Ghi Bù";
+    } else if (tab === "waiting") {
+      this.btnAddRow.style.display = "inline-flex";
+      this.addBtnText.textContent = "Thêm Học Viên Chờ";
+    } else if (tab === "reserve") {
+      this.btnAddRow.style.display = "inline-flex";
+      this.addBtnText.textContent = "Thêm Hồ Sơ Bảo Lưu";
     } else {
       this.btnAddRow.style.display = "none";
     }
@@ -297,11 +347,19 @@ class App {
     this.renderClasses();
     this.renderAttendance();
     this.renderMakeup();
+    this.renderWaiting();
+    this.renderReserve();
 
     // Update tab badges
     document.getElementById("badge-students-count").textContent = this.store.students.length;
     document.getElementById("badge-classes-count").textContent = this.store.classes.length;
     document.getElementById("badge-makeup-count").textContent = this.store.makeup.length;
+    if (document.getElementById("badge-waiting-count")) {
+      document.getElementById("badge-waiting-count").textContent = this.store.waiting ? this.store.waiting.length : 0;
+    }
+    if (document.getElementById("badge-reserve-count")) {
+      document.getElementById("badge-reserve-count").textContent = this.store.reserve ? this.store.reserve.length : 0;
+    }
 
     if (window.lucide) {
       window.lucide.createIcons();
@@ -1101,6 +1159,352 @@ class App {
     this.showToast("Đã thêm bản ghi học bù!");
   }
 
+  // ================= 5. TAB WAITING (CHỜ LỚP NEW / LEVEL UP) =================
+  renderWaiting() {
+    if (!this.tbodyWaiting) return;
+    const query = (this.searchWaiting ? this.searchWaiting.value : "").toLowerCase().trim();
+    const typeFilter = this.filterWaitingType ? this.filterWaitingType.value : "";
+    const statusFilter = this.filterWaitingStatus ? this.filterWaitingStatus.value : "";
+    const timeFilter = this.filterWaitingTime ? this.filterWaitingTime.value : "";
+
+    const waitingList = this.store.waiting || [];
+
+    const filtered = waitingList.filter(item => {
+      const matchQuery = !query ||
+        (item.fullName && item.fullName.toLowerCase().includes(query)) ||
+        (item.phone && item.phone.toLowerCase().includes(query)) ||
+        (item.parentName && item.parentName.toLowerCase().includes(query)) ||
+        (item.email && item.email.toLowerCase().includes(query)) ||
+        (item.courseTrack && item.courseTrack.toLowerCase().includes(query)) ||
+        (item.subject && item.subject.toLowerCase().includes(query));
+
+      const matchType = !typeFilter || item.type === typeFilter;
+      const matchStatus = !statusFilter || item.status === statusFilter;
+      const matchTime = !timeFilter || item.timeCategory === timeFilter;
+
+      return matchQuery && matchType && matchStatus && matchTime;
+    });
+
+    // Update metrics
+    const total = waitingList.length;
+    const c12w = waitingList.filter(w => w.timeCategory === "Học viên đã Chờ 1 - 2 tuần").length;
+    const c34w = waitingList.filter(w => w.timeCategory === "Học viên đã Chờ 3 - 4 tuần").length;
+    const cOver1m = waitingList.filter(w => w.timeCategory === "Học viên đã Chờ hơn 1 tháng").length;
+    const placed = waitingList.filter(w => w.status === "Đã vào lớp" || w.status === "Đã xếp lớp").length;
+
+    if (document.getElementById("metric-waiting-total")) document.getElementById("metric-waiting-total").textContent = total;
+    if (document.getElementById("metric-waiting-1-2w")) document.getElementById("metric-waiting-1-2w").textContent = c12w;
+    if (document.getElementById("metric-waiting-3-4w")) document.getElementById("metric-waiting-3-4w").textContent = c34w;
+    if (document.getElementById("metric-waiting-over1m")) document.getElementById("metric-waiting-over1m").textContent = cOver1m;
+    if (document.getElementById("metric-waiting-placed")) document.getElementById("metric-waiting-placed").textContent = placed;
+
+    if (this.waitingTableCount) {
+      this.waitingTableCount.textContent = `Hiển thị ${filtered.length} / ${total} học viên`;
+    }
+
+    if (filtered.length === 0) {
+      this.tbodyWaiting.innerHTML = `<tr><td colspan="14" style="text-align: center; padding: 40px; color: #64748b; font-weight:600;">Chưa có học viên nào trong danh sách chờ lớp. Bấm nút <b>"Thêm Học Viên Chờ"</b> để tạo hồ sơ mới.</td></tr>`;
+      return;
+    }
+
+    this.tbodyWaiting.innerHTML = filtered.map((item, idx) => {
+      const typeBadge = item.type === "Chờ lớp New" ? "badge-coding" : "badge-robotics";
+      let statusBadge = "badge-low";
+      if (item.status === "Đã vào lớp" || item.status === "Đã xếp lớp") statusBadge = "badge-full";
+      if (item.status === "Ngừng học") statusBadge = "badge-neutral";
+
+      let timeBadgeClass = "badge-low";
+      if (item.timeCategory === "Học viên đã Chờ 1 - 2 tuần") timeBadgeClass = "badge-coding";
+      if (item.timeCategory === "Học viên đã Chờ 3 - 4 tuần") timeBadgeClass = "badge-robotics";
+
+      return `
+        <tr data-waiting-id="${item.id}">
+          <td class="col-num sticky-col">${idx + 1}</td>
+          <td class="sticky-col"><span class="badge ${typeBadge}">${item.type || 'Chờ lớp'}</span></td>
+          <td class="col-name sticky-col-2"><strong>${item.fullName || '-'}</strong></td>
+          <td>${item.phone || '-'}</td>
+          <td>${item.parentName || '-'}</td>
+          <td>${item.email || '-'}</td>
+          <td>${item.courseTrack || '-'}</td>
+          <td><span class="badge" style="background:#e0e7ff; color:#3730a3; font-weight:900;">${item.subject || '-'}</span></td>
+          <td>${item.startDate || '-'}</td>
+          <td>${item.endDate || '-'}</td>
+          <td><span class="badge ${statusBadge}">${item.status || 'Đang đợi lớp'}</span></td>
+          <td><span class="badge ${timeBadgeClass}">${item.timeCategory || '-'}</span></td>
+          <td style="max-width: 200px; white-space: normal;">${item.note || '-'}</td>
+          <td class="col-actions">
+            <div class="row-actions">
+              <button class="btn-icon" title="Chỉnh sửa" onclick="app.openWaitingModal('${item.id}')"><i data-lucide="edit-3"></i></button>
+              <button class="btn-icon btn-delete" title="Xóa" onclick="app.deleteWaiting('${item.id}')"><i data-lucide="trash-2"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  openWaitingModal(id = null) {
+    if (!this.formWaiting) return;
+    const title = document.getElementById("modal-waiting-title");
+    this.formWaiting.reset();
+
+    if (id) {
+      const item = (this.store.waiting || []).find(w => w.id === id);
+      if (!item) return;
+      title.textContent = "Chỉnh Sửa Hồ Sơ Chờ Lớp";
+      document.getElementById("waiting-id").value = item.id;
+      document.getElementById("waiting-type").value = item.type || "Chờ lớp New";
+      document.getElementById("waiting-fullName").value = item.fullName || "";
+      document.getElementById("waiting-phone").value = item.phone || "";
+      document.getElementById("waiting-parentName").value = item.parentName || "";
+      document.getElementById("waiting-email").value = item.email || "";
+      document.getElementById("waiting-courseTrack").value = item.courseTrack || "";
+      document.getElementById("waiting-subject").value = item.subject || "pre";
+      document.getElementById("waiting-startDate").value = item.startDate || "";
+      document.getElementById("waiting-endDate").value = item.endDate || "";
+      document.getElementById("waiting-status").value = item.status || "Đang đợi lớp";
+      document.getElementById("waiting-timeCategory").value = item.timeCategory || "Học viên đã Chờ 1 - 2 tuần";
+      document.getElementById("waiting-note").value = item.note || "";
+    } else {
+      title.textContent = "Thêm Học Viên Chờ Lớp";
+      document.getElementById("waiting-id").value = "";
+    }
+
+    this.modalWaiting.classList.add("open");
+  }
+
+  handleWaitingSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById("waiting-id").value;
+    const data = {
+      type: document.getElementById("waiting-type").value,
+      fullName: document.getElementById("waiting-fullName").value.trim(),
+      phone: document.getElementById("waiting-phone").value.trim(),
+      parentName: document.getElementById("waiting-parentName").value.trim(),
+      email: document.getElementById("waiting-email").value.trim(),
+      courseTrack: document.getElementById("waiting-courseTrack").value.trim(),
+      subject: document.getElementById("waiting-subject").value,
+      startDate: document.getElementById("waiting-startDate").value,
+      endDate: document.getElementById("waiting-endDate").value,
+      status: document.getElementById("waiting-status").value,
+      timeCategory: document.getElementById("waiting-timeCategory").value,
+      note: document.getElementById("waiting-note").value.trim()
+    };
+
+    if (!this.store.waiting) this.store.waiting = [];
+
+    if (id) {
+      const idx = this.store.waiting.findIndex(w => w.id === id);
+      if (idx !== -1) {
+        this.store.waiting[idx] = { ...this.store.waiting[idx], ...data };
+        this.showToast("Cập nhật hồ sơ chờ lớp thành công!");
+      }
+    } else {
+      const newRec = {
+        id: "wt-" + Date.now(),
+        ...data
+      };
+      this.store.waiting.unshift(newRec);
+      this.showToast("Thêm học viên chờ lớp thành công!");
+    }
+
+    this.store.save();
+    this.modalWaiting.classList.remove("open");
+    this.render();
+  }
+
+  deleteWaiting(id) {
+    if (confirm("Chị có chắc chắn muốn xóa học viên khỏi danh sách chờ lớp?")) {
+      this.store.waiting = (this.store.waiting || []).filter(w => w.id !== id);
+      this.store.save();
+      this.render();
+      this.showToast("Đã xóa học viên chờ lớp");
+    }
+  }
+
+  // ================= 6. TAB RESERVE (BẢO LƯU HỌC VIÊN) =================
+  calcReserveUrgency(endDateStr, status) {
+    if (status === "Đã đi học lại" || status === "Nghỉ ngang") {
+      return status;
+    }
+    if (!endDateStr) return "Còn hạn";
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = new Date(endDateStr);
+    if (isNaN(end.getTime())) return "Còn hạn";
+
+    const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) return "Quá hạn";
+    if (diffDays <= 15) return "Sắp tới hạn";
+    return "Còn hạn";
+  }
+
+  renderReserve() {
+    if (!this.tbodyReserve) return;
+    const query = (this.searchReserve ? this.searchReserve.value : "").toLowerCase().trim();
+    const typeFilter = this.filterReserveType ? this.filterReserveType.value : "";
+    const statusFilter = this.filterReserveStatus ? this.filterReserveStatus.value : "";
+    const urgencyFilter = this.filterReserveUrgency ? this.filterReserveUrgency.value : "";
+
+    const reserveList = this.store.reserve || [];
+
+    const filtered = reserveList.filter(item => {
+      const matchQuery = !query ||
+        (item.fullName && item.fullName.toLowerCase().includes(query)) ||
+        (item.classCode && item.classCode.toLowerCase().includes(query)) ||
+        (item.phone && item.phone.toLowerCase().includes(query)) ||
+        (item.parentName && item.parentName.toLowerCase().includes(query)) ||
+        (item.email && item.email.toLowerCase().includes(query)) ||
+        (item.courseTrack && item.courseTrack.toLowerCase().includes(query));
+
+      const matchType = !typeFilter || item.type === typeFilter;
+      const matchStatus = !statusFilter || item.status === statusFilter;
+      const urgency = this.calcReserveUrgency(item.endDate, item.status);
+      const matchUrgency = !urgencyFilter || urgency === urgencyFilter;
+
+      return matchQuery && matchType && matchStatus && matchUrgency;
+    });
+
+    // Update metrics
+    const total = reserveList.length;
+    const active = reserveList.filter(r => r.status === "Đang bảo lưu" && this.calcReserveUrgency(r.endDate, r.status) === "Còn hạn").length;
+    const nearExpire = reserveList.filter(r => r.status === "Đang bảo lưu" && this.calcReserveUrgency(r.endDate, r.status) === "Sắp tới hạn").length;
+    const expired = reserveList.filter(r => r.status === "Đang bảo lưu" && this.calcReserveUrgency(r.endDate, r.status) === "Quá hạn").length;
+    const rejoined = reserveList.filter(r => r.status === "Đã đi học lại").length;
+
+    if (document.getElementById("metric-reserve-tab-total")) document.getElementById("metric-reserve-tab-total").textContent = total;
+    if (document.getElementById("metric-reserve-active")) document.getElementById("metric-reserve-active").textContent = active;
+    if (document.getElementById("metric-reserve-near-expire")) document.getElementById("metric-reserve-near-expire").textContent = nearExpire;
+    if (document.getElementById("metric-reserve-expired")) document.getElementById("metric-reserve-expired").textContent = expired;
+    if (document.getElementById("metric-reserve-rejoined")) document.getElementById("metric-reserve-rejoined").textContent = rejoined;
+
+    if (this.reserveTableCount) {
+      this.reserveTableCount.textContent = `Hiển thị ${filtered.length} / ${total} học viên`;
+    }
+
+    if (filtered.length === 0) {
+      this.tbodyReserve.innerHTML = `<tr><td colspan="14" style="text-align: center; padding: 40px; color: #64748b; font-weight:600;">Chưa có hồ sơ bảo lưu nào. Bấm nút <b>"Thêm Hồ Sơ Bảo Lưu"</b> để tạo mới.</td></tr>`;
+      return;
+    }
+
+    this.tbodyReserve.innerHTML = filtered.map((item, idx) => {
+      const typeBadge = item.type === "Bảo lưu vượt hạn" ? "badge-low" : "badge-neutral";
+      let statusBadge = "badge-coding";
+      if (item.status === "Đã đi học lại") statusBadge = "badge-full";
+      if (item.status === "Nghỉ ngang") statusBadge = "badge-low";
+
+      const urgency = this.calcReserveUrgency(item.endDate, item.status);
+      let urgencyBadge = "badge-full";
+      if (urgency === "Sắp tới hạn") urgencyBadge = "badge-low";
+      if (urgency === "Quá hạn") urgencyBadge = "badge-low";
+
+      return `
+        <tr data-reserve-id="${item.id}">
+          <td class="col-num sticky-col">${idx + 1}</td>
+          <td class="col-name sticky-col"><strong>${item.fullName || '-'}</strong></td>
+          <td class="sticky-col-2"><strong>${item.classCode || '-'}</strong></td>
+          <td>${item.phone || '-'}</td>
+          <td>${item.parentName || '-'}</td>
+          <td>${item.email || '-'}</td>
+          <td>${item.courseTrack || '-'}</td>
+          <td><span class="badge ${typeBadge}">${item.type || 'Bảo lưu thường'}</span></td>
+          <td><span class="badge ${statusBadge}">${item.status || 'Đang bảo lưu'}</span></td>
+          <td>${item.startDate || '-'}</td>
+          <td>${item.endDate || '-'}</td>
+          <td><span class="badge ${urgencyBadge}">${urgency}</span></td>
+          <td style="max-width: 200px; white-space: normal;">${item.note || '-'}</td>
+          <td class="col-actions">
+            <div class="row-actions">
+              <button class="btn-icon" title="Chỉnh sửa" onclick="app.openReserveModal('${item.id}')"><i data-lucide="edit-3"></i></button>
+              <button class="btn-icon btn-delete" title="Xóa" onclick="app.deleteReserve('${item.id}')"><i data-lucide="trash-2"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  openReserveModal(id = null) {
+    if (!this.formReserve) return;
+    const title = document.getElementById("modal-reserve-title");
+    this.formReserve.reset();
+
+    if (id) {
+      const item = (this.store.reserve || []).find(r => r.id === id);
+      if (!item) return;
+      title.textContent = "Chỉnh Sửa Hồ Sơ Bảo Lưu";
+      document.getElementById("reserve-id").value = item.id;
+      document.getElementById("reserve-fullName").value = item.fullName || "";
+      document.getElementById("reserve-classCode").value = item.classCode || "";
+      document.getElementById("reserve-phone").value = item.phone || "";
+      document.getElementById("reserve-parentName").value = item.parentName || "";
+      document.getElementById("reserve-email").value = item.email || "";
+      document.getElementById("reserve-courseTrack").value = item.courseTrack || "";
+      document.getElementById("reserve-type").value = item.type || "Bảo lưu thường";
+      document.getElementById("reserve-status").value = item.status || "Đang bảo lưu";
+      document.getElementById("reserve-startDate").value = item.startDate || "";
+      document.getElementById("reserve-endDate").value = item.endDate || "";
+      document.getElementById("reserve-note").value = item.note || "";
+    } else {
+      title.textContent = "Thêm Hồ Sơ Bảo Lưu";
+      document.getElementById("reserve-id").value = "";
+    }
+
+    this.modalReserve.classList.add("open");
+  }
+
+  handleReserveSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById("reserve-id").value;
+    const data = {
+      fullName: document.getElementById("reserve-fullName").value.trim(),
+      classCode: document.getElementById("reserve-classCode").value.trim(),
+      phone: document.getElementById("reserve-phone").value.trim(),
+      parentName: document.getElementById("reserve-parentName").value.trim(),
+      email: document.getElementById("reserve-email").value.trim(),
+      courseTrack: document.getElementById("reserve-courseTrack").value.trim(),
+      type: document.getElementById("reserve-type").value,
+      status: document.getElementById("reserve-status").value,
+      startDate: document.getElementById("reserve-startDate").value,
+      endDate: document.getElementById("reserve-endDate").value,
+      note: document.getElementById("reserve-note").value.trim()
+    };
+
+    if (!this.store.reserve) this.store.reserve = [];
+
+    if (id) {
+      const idx = this.store.reserve.findIndex(r => r.id === id);
+      if (idx !== -1) {
+        this.store.reserve[idx] = { ...this.store.reserve[idx], ...data };
+        this.showToast("Cập nhật hồ sơ bảo lưu thành công!");
+      }
+    } else {
+      const newRec = {
+        id: "rs-" + Date.now(),
+        ...data
+      };
+      this.store.reserve.unshift(newRec);
+      this.showToast("Thêm hồ sơ bảo lưu thành công!");
+    }
+
+    this.store.save();
+    this.modalReserve.classList.remove("open");
+    this.render();
+  }
+
+  deleteReserve(id) {
+    if (confirm("Chị có chắc chắn muốn xóa hồ sơ bảo lưu này không?")) {
+      this.store.reserve = (this.store.reserve || []).filter(r => r.id !== id);
+      this.store.save();
+      this.render();
+      this.showToast("Đã xóa hồ sơ bảo lưu");
+    }
+  }
+
   // ================= EXPORT & IMPORT =================
   exportToExcel() {
     if (typeof XLSX === "undefined") {
@@ -1167,6 +1571,42 @@ class App {
     }));
     const wsMakeup = XLSX.utils.json_to_sheet(wsMakeupData);
     XLSX.utils.book_append_sheet(wb, wsMakeup, "Quản lý học bù");
+
+    const wsWaitingData = (this.store.waiting || []).map((w, idx) => ({
+      "STT": idx + 1,
+      "Loại chờ lớp": w.type,
+      "Họ và tên học viên": w.fullName,
+      "Số điện thoại": w.phone,
+      "Tên phụ huynh": w.parentName,
+      "Email": w.email,
+      "Lộ trình": w.courseTrack,
+      "Bộ môn": w.subject,
+      "Ngày khai giảng": w.startDate,
+      "Ngày demo/kết thúc": w.endDate,
+      "Trạng thái chờ": w.status,
+      "Phân loại chờ": w.timeCategory,
+      "Note": w.note
+    }));
+    const wsWaiting = XLSX.utils.json_to_sheet(wsWaitingData);
+    XLSX.utils.book_append_sheet(wb, wsWaiting, "Chờ lớp");
+
+    const wsReserveData = (this.store.reserve || []).map((r, idx) => ({
+      "STT": idx + 1,
+      "Họ và tên học viên": r.fullName,
+      "Mã lớp": r.classCode,
+      "Số điện thoại": r.phone,
+      "Tên phụ huynh": r.parentName,
+      "Email": r.email,
+      "Lộ trình": r.courseTrack,
+      "Loại bảo lưu": r.type,
+      "Trạng thái bảo lưu": r.status,
+      "Ngày bắt đầu": r.startDate,
+      "Ngày kết thúc": r.endDate,
+      "Tình trạng thời hạn": this.calcReserveUrgency(r.endDate, r.status),
+      "Ghi chú": r.note
+    }));
+    const wsReserve = XLSX.utils.json_to_sheet(wsReserveData);
+    XLSX.utils.book_append_sheet(wb, wsReserve, "Bảo lưu");
 
     const fileName = `MindX_ThuanAn_Ops_${new Date().toISOString().slice(0, 10)}.xlsx`;
     XLSX.writeFile(wb, fileName);

@@ -289,7 +289,7 @@ body {
 
 .tabs-list {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 6px;
   width: 100%;
   align-items: flex-end;
@@ -299,13 +299,13 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 14px;
+  gap: 6px;
+  padding: 10px 8px;
   background-color: #94a3b8;
   border: 1.5px solid #64748b;
   border-bottom: none;
   border-radius: 6px 6px 0 0;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 800;
   color: #ffffff;
   cursor: pointer;
