@@ -790,6 +790,9 @@ class App {
         : `<span class="badge badge-low">Thiếu sĩ số (${activeCount}/${targetCapacity})</span>`;
 
       const trackBadge = c.trackCategory === "Coding" ? "badge-coding" : "badge-robotics";
+      const statusClass = c.status === "Running"
+        ? "class-status-running"
+        : (c.status === "Finished" ? "class-status-finished" : "class-status-waiting");
 
       return `
         <tr data-class-code="${c.classCode}">
@@ -807,7 +810,7 @@ class App {
           <td>${c.ta || '-'}</td>
           <td>${c.cs || '-'}</td>
           <td>
-            <select class="filter-select" style="padding: 2px 6px;" onchange="app.changeClassStatus('${c.id}', this.value)">
+            <select class="filter-select class-status-select ${statusClass}" style="padding: 3px 8px;" onchange="app.changeClassStatus('${c.id}', this.value)">
               <option value="Running" ${c.status === 'Running' ? 'selected' : ''}>Running</option>
               <option value="Chờ lớp" ${c.status === 'Chờ lớp' ? 'selected' : ''}>Chờ lớp</option>
               <option value="Finished" ${c.status === 'Finished' ? 'selected' : ''}>Finished</option>

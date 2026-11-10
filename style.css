@@ -512,6 +512,29 @@ body {
   border-color: var(--brand-red);
 }
 
+/* Status-specific styles for class status dropdown */
+.class-status-select {
+  font-weight: 800;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.class-status-running {
+  background-color: #dcfce7 !important;
+  color: #15803d !important;
+  border: 1px solid #86efac !important;
+}
+.class-status-finished {
+  background-color: #fee2e2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fca5a5 !important;
+}
+.class-status-waiting {
+  background-color: #ffffff !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
 .count-label {
   font-size: 0.84rem;
   color: #0f172a;
