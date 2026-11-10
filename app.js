@@ -9,6 +9,21 @@ const INITIAL_CLASSES = [];
 const INITIAL_STUDENTS = [];
 const INITIAL_ATTENDANCE = {};
 
+// Helper: Format YYYY-MM-DD to DD/MM/YYYY for Vietnamese display
+function formatDateVN(dateStr) {
+  if (!dateStr || typeof dateStr !== "string") return "-";
+  const trimmed = dateStr.trim();
+  if (!trimmed) return "-";
+  // If already DD/MM/YYYY or similar with slashes
+  if (trimmed.includes("/")) return trimmed;
+  // If YYYY-MM-DD
+  const parts = trimmed.split("-");
+  if (parts.length === 3 && parts[0].length === 4) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return trimmed;
+}
+
 // State Store
 class Store {
   constructor() {
@@ -783,10 +798,10 @@ class App {
           <td class="sticky-col-2"><strong>${c.classCode}</strong></td>
           <td>${c.studyFormat}</td>
           <td>${c.schedule || '-'}</td>
-          <td>${c.startDate || '-'}</td>
-          <td>${c.cp1Date || '-'}</td>
-          <td>${c.cp2Date || '-'}</td>
-          <td>${c.demoDate || '-'}</td>
+          <td>${formatDateVN(c.startDate)}</td>
+          <td>${formatDateVN(c.cp1Date)}</td>
+          <td>${formatDateVN(c.cp2Date)}</td>
+          <td>${formatDateVN(c.demoDate)}</td>
           <td>${capacityBadge}</td>
           <td>${c.teacher || '-'}</td>
           <td>${c.ta || '-'}</td>
@@ -1369,8 +1384,8 @@ class App {
           <td>${item.email || '-'}</td>
           <td>${item.courseTrack || '-'}</td>
           <td><span class="badge" style="background:#e0e7ff; color:#3730a3; font-weight:900;">${item.subject || '-'}</span></td>
-          <td>${item.startDate || '-'}</td>
-          <td>${item.endDate || '-'}</td>
+          <td>${formatDateVN(item.startDate)}</td>
+          <td>${formatDateVN(item.endDate)}</td>
           <td><span class="badge ${statusBadge}">${item.status || 'Đang đợi lớp'}</span></td>
           <td><span class="badge ${timeBadgeClass}">${item.timeCategory || '-'}</span></td>
           <td style="max-width: 200px; white-space: normal;">${item.note || '-'}</td>
@@ -1553,8 +1568,8 @@ class App {
           <td>${item.courseTrack || '-'}</td>
           <td><span class="badge ${typeBadge}">${item.type || 'Bảo lưu thường'}</span></td>
           <td><span class="badge ${statusBadge}">${item.status || 'Đang bảo lưu'}</span></td>
-          <td>${item.startDate || '-'}</td>
-          <td>${item.endDate || '-'}</td>
+          <td>${formatDateVN(item.startDate)}</td>
+          <td>${formatDateVN(item.endDate)}</td>
           <td><span class="badge ${urgencyBadge}">${urgency}</span></td>
           <td style="max-width: 200px; white-space: normal;">${item.note || '-'}</td>
           <td class="col-actions">
@@ -1684,10 +1699,10 @@ class App {
         "Sĩ số hiện tại": activeCount,
         "Tình trạng sĩ số": activeCount >= targetCapacity ? "Đủ sĩ số" : "Thiếu sĩ số",
         "Lịch học": c.schedule,
-        "Ngày khai giảng": c.startDate,
-        "Ngày CP1": c.cp1Date,
-        "Ngày CP2": c.cp2Date,
-        "Ngày Demo": c.demoDate,
+        "Ngày khai giảng": formatDateVN(c.startDate),
+        "Ngày CP1": formatDateVN(c.cp1Date),
+        "Ngày CP2": formatDateVN(c.cp2Date),
+        "Ngày Demo": formatDateVN(c.demoDate),
         "Giáo viên phụ trách": c.teacher,
         "Trợ giảng": c.ta,
         "CS phụ trách": c.cs,
@@ -1723,8 +1738,8 @@ class App {
       "Email": w.email,
       "Lộ trình": w.courseTrack,
       "Bộ môn": w.subject,
-      "Ngày khai giảng": w.startDate,
-      "Ngày demo/kết thúc": w.endDate,
+      "Ngày khai giảng": formatDateVN(w.startDate),
+      "Ngày demo/kết thúc": formatDateVN(w.endDate),
       "Trạng thái chờ": w.status,
       "Phân loại chờ": w.timeCategory,
       "Note": w.note
@@ -1742,8 +1757,8 @@ class App {
       "Lộ trình": r.courseTrack,
       "Loại bảo lưu": r.type,
       "Trạng thái bảo lưu": r.status,
-      "Ngày bắt đầu": r.startDate,
-      "Ngày kết thúc": r.endDate,
+      "Ngày bắt đầu": formatDateVN(r.startDate),
+      "Ngày kết thúc": formatDateVN(r.endDate),
       "Tình trạng thời hạn": this.calcReserveUrgency(r.endDate, r.status),
       "Ghi chú": r.note
     }));
