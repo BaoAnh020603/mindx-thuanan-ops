@@ -20,13 +20,15 @@ function switchRole(role) {
   if (role === "CS") {
     roleBtnCS.classList.add("active");
     roleBtnAdmin.classList.remove("active");
-    labelLoginId.textContent = "Mã nhân viên CS *";
+    labelLoginId.textContent = "Họ và tên CS (hoặc Mã NV) *";
     staffIdInput.value = "";
+    staffIdInput.placeholder = "Ví dụ: Trần Thị Thảo Vy";
   } else {
     roleBtnAdmin.classList.add("active");
     roleBtnCS.classList.remove("active");
     labelLoginId.textContent = "Tài khoản Quản lý (Admin) *";
     staffIdInput.value = "admin";
+    staffIdInput.placeholder = "";
   }
   errorMsg.style.display = "none";
   passwordInput.value = "";
@@ -94,9 +96,60 @@ if (formLogin) {
   });
 }
 
+function showToast(message, type = "success") {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+
+  const msgEl = document.getElementById("toast-message");
+  const titleEl = document.getElementById("toast-title");
+  const iconEl = document.getElementById("toast-icon");
+
+  if (msgEl) msgEl.textContent = message;
+  if (titleEl) {
+    if (type === "info") titleEl.textContent = "HỆ THỐNG MINDX";
+    else titleEl.textContent = "MINDX OPS THUẬN AN";
+  }
+
+  if (iconEl) {
+    let iconName = "check-circle-2";
+    if (type === "info") iconName = "log-out";
+    iconEl.innerHTML = `<i data-lucide="${iconName}"></i>`;
+    if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+  }
+
+  toast.className = `toast toast-${type}`;
+  toast.classList.remove("hidden");
+  requestAnimationFrame(() => {
+    toast.classList.add("show");
+  });
+
+  setTimeout(() => {
+    hideToast();
+  }, 3500);
+}
+
+function hideToast() {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+  toast.classList.remove("show");
+  setTimeout(() => {
+    toast.classList.add("hidden");
+  }, 320);
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   if (window.lucide && window.lucide.createIcons) {
     window.lucide.createIcons();
+  }
+
+  // Check if just logged out
+  const logoutMsg = sessionStorage.getItem("mx_ta_logout_message") || localStorage.getItem("mx_ta_logout_message");
+  if (logoutMsg) {
+    sessionStorage.removeItem("mx_ta_logout_message");
+    localStorage.removeItem("mx_ta_logout_message");
+    setTimeout(() => {
+      showToast(logoutMsg, "info");
+    }, 400);
   }
 });
 

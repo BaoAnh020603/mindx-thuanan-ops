@@ -1967,6 +1967,11 @@ class AuthManager {
     if (this.btnLogout) {
       this.btnLogout.addEventListener("click", () => {
         if (confirm("Bạn có chắc chắn muốn đăng xuất không?")) {
+          const userName = session.staffId || "Bạn";
+          const logoutMsg = `Tạm biệt ${userName}, bạn đã đăng xuất thành công khỏi hệ thống!`;
+          sessionStorage.setItem("mx_ta_logout_message", logoutMsg);
+          localStorage.setItem("mx_ta_logout_message", logoutMsg);
+
           sessionStorage.removeItem(this.sessionKey);
           localStorage.removeItem(this.sessionKey);
           window.location.replace("index.html");
@@ -1974,16 +1979,16 @@ class AuthManager {
       });
     }
 
-    // Greet user on new login
+    // Greet user on new login with their exact name
     if (session.justLoggedIn) {
       delete session.justLoggedIn;
       sessionStorage.setItem(this.sessionKey, JSON.stringify(session));
       localStorage.setItem(this.sessionKey, JSON.stringify(session));
 
       setTimeout(() => {
-        const roleLabel = session.role === "ADMIN" ? "Quản lý (Admin)" : "Nhân viên CS";
+        const userName = session.staffId || "bạn";
         if (window.app && window.app.showToast) {
-          window.app.showToast(`Chào mừng ${roleLabel} ${session.staffId} đã đăng nhập hệ thống!`, "success");
+          window.app.showToast(`Chào ${userName}, chúc bạn một ngày làm việc hiệu quả tại MindX!`, "success");
         }
       }, 500);
     }

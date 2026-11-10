@@ -3,6 +3,121 @@
    LOGIN MODULE STYLESHEET (login.css)
    ========================================================================== */
 
+/* MindX Signature Toast Notification for Login Page */
+.toast-container {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 320px;
+  max-width: 440px;
+  padding: 12px 18px;
+  background: #ffffff;
+  border-radius: 12px;
+  border-left: 5px solid #d91b24;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.18), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  border-right: 1px solid rgba(226, 232, 240, 0.8);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 700;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toast.hidden {
+  display: none !important;
+}
+
+.toast-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #fff1f2;
+  color: #d91b24;
+  flex-shrink: 0;
+}
+
+.toast-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.toast-title {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #d91b24;
+  font-weight: 800;
+}
+
+.toast-message {
+  font-size: 0.86rem;
+  color: #1e293b;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.toast-close-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.toast-close-btn:hover {
+  color: #0f172a;
+}
+
+.toast.toast-success {
+  border-left-color: #10b981;
+}
+.toast.toast-success .toast-icon-wrapper {
+  background: #ecfdf5;
+  color: #059669;
+}
+.toast.toast-success .toast-title {
+  color: #059669;
+}
+
+.toast.toast-info {
+  border-left-color: #0284c7;
+}
+.toast.toast-info .toast-icon-wrapper {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+.toast.toast-info .toast-title {
+  color: #0284c7;
+}
+
 body, html {
   height: 100%;
   margin: 0;
