@@ -416,12 +416,51 @@ class App {
     });
   }
 
-  showToast(message) {
-    this.toast.textContent = message;
+  showToast(message, type = "success") {
+    if (!this.toast) return;
+
+    const msgEl = document.getElementById("toast-message");
+    const titleEl = document.getElementById("toast-title");
+    const iconEl = document.getElementById("toast-icon");
+
+    if (msgEl) msgEl.textContent = message;
+    if (titleEl) {
+      if (type === "warning") titleEl.textContent = "CẢNH BÁO / LƯU Ý";
+      else if (type === "danger") titleEl.textContent = "LỖI HỆ THỐNG";
+      else if (type === "info") titleEl.textContent = "THÔNG BÁO MINDX";
+      else titleEl.textContent = "MINDX OPS THUẬN AN";
+    }
+
+    if (iconEl) {
+      let iconName = "check-circle-2";
+      if (type === "warning") iconName = "alert-triangle";
+      else if (type === "danger") iconName = "alert-circle";
+      else if (type === "info") iconName = "info";
+      iconEl.innerHTML = `<i data-lucide="${iconName}"></i>`;
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    // Set variant classes
+    this.toast.className = `toast toast-${type}`;
     this.toast.classList.remove("hidden");
+
+    // Smooth entrance animation
+    requestAnimationFrame(() => {
+      this.toast.classList.add("show");
+    });
+
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.toastTimeout = setTimeout(() => {
+      this.hideToast();
+    }, 3200);
+  }
+
+  hideToast() {
+    if (!this.toast) return;
+    this.toast.classList.remove("show");
     setTimeout(() => {
       this.toast.classList.add("hidden");
-    }, 2800);
+    }, 320);
   }
 
   switchTab(tab) {

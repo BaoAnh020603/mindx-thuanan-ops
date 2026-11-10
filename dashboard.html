@@ -930,8 +930,19 @@
       </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast hidden"></div>
+    <!-- Toast Notification Container (MindX Signature) -->
+    <div class="toast-container" id="toast-container">
+      <div id="toast" class="toast hidden">
+        <div class="toast-icon-wrapper" id="toast-icon">
+          <i data-lucide="check-circle-2"></i>
+        </div>
+        <div class="toast-body">
+          <span class="toast-title" id="toast-title">MINDX OPS THUẬN AN</span>
+          <span class="toast-message" id="toast-message">Thông báo hệ thống</span>
+        </div>
+        <button class="toast-close-btn" onclick="app.hideToast()">&times;</button>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>
