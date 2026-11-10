@@ -100,9 +100,11 @@ class Store {
 
   // Calculate dynamic capacity for a class based on active students
   getClassActiveCount(classCode) {
-    return this.students.filter(
-      s => s.classCode === classCode && (s.status === "Active" || s.status === "Sắp hết phí")
-    ).length;
+    return this.students.filter(s => {
+      const inClass = (Array.isArray(s.classCodes) && s.classCodes.includes(classCode)) ||
+                      (typeof s.classCode === "string" && s.classCode.split(",").map(x => x.trim()).includes(classCode));
+      return inClass && (s.status === "Active" || s.status === "Sắp hết phí");
+    }).length;
   }
 
   // Attendance Attendance key generator
@@ -402,11 +404,11 @@ class App {
             courseTrack: document.getElementById("student-courseTrack")?.value || "",
             currentModule: document.getElementById("student-currentModule")?.value || "",
             trackCategory: document.getElementById("student-trackCategory")?.value || "",
-            classCode: document.getElementById("student-classCode")?.value || "",
+            classCodes: Array.from(document.querySelectorAll("#student-classes-selector input[type='checkbox']:checked")).map(cb => cb.value),
             studyFormat: document.getElementById("student-studyFormat")?.value || "",
             status: document.getElementById("student-status")?.value || "Active"
           };
-          if (draft.fullName || draft.phone || draft.parentName) {
+          if (draft.fullName || draft.phone || draft.parentName || (draft.classCodes && draft.classCodes.length > 0)) {
             localStorage.setItem("mx_ta_draft_student", JSON.stringify(draft));
           }
         }
@@ -490,12 +492,19 @@ class App {
     this.filterStudentClass.innerHTML = `<option value="">-- Tất cả lớp --</option>` +
       classCodes.map(code => `<option value="${code}" ${code === curStdFilter ? 'selected' : ''}>${code}</option>`).join("");
 
-    // Student modal class select
-    const modalStdClass = document.getElementById("student-classCode");
-    if (classCodes.length > 0) {
-      modalStdClass.innerHTML = classCodes.map(code => `<option value="${code}">${code}</option>`).join("");
-    } else {
-      modalStdClass.innerHTML = `<option value="">(Chưa tạo lớp - vui lòng tạo lớp trước)</option>`;
+    // Student modal class multi-selection container
+    const modalStdClassesCont = document.getElementById("student-classes-selector");
+    if (modalStdClassesCont) {
+      if (classCodes.length > 0) {
+        modalStdClassesCont.innerHTML = classCodes.map(code => `
+          <label class="class-checkbox-item">
+            <input type="checkbox" name="studentClasses" value="${code}">
+            <span>${code}</span>
+          </label>
+        `).join("");
+      } else {
+        modalStdClassesCont.innerHTML = `<span style="color:#64748b; font-size:12px; padding:6px;">(Chưa tạo lớp - vui lòng tạo lớp trước)</span>`;
+      }
     }
 
     // Attendance class selector
@@ -523,16 +532,21 @@ class App {
     const classFilter = this.filterStudentClass.value;
 
     const filtered = this.store.students.filter(s => {
+      const studentClasses = Array.isArray(s.classCodes) 
+        ? s.classCodes 
+        : (s.classCode ? s.classCode.split(",").map(x => x.trim()) : []);
+      const classStr = studentClasses.join(" ");
+
       const matchQuery = !query ||
         s.fullName.toLowerCase().includes(query) ||
         (s.phone && s.phone.includes(query)) ||
         (s.parentName && s.parentName.toLowerCase().includes(query)) ||
         (s.email && s.email.toLowerCase().includes(query)) ||
-        (s.classCode && s.classCode.toLowerCase().includes(query));
+        classStr.toLowerCase().includes(query);
 
       const matchStatus = !statusFilter || s.status === statusFilter;
       const matchTrack = !trackFilter || s.trackCategory === trackFilter;
-      const matchClass = !classFilter || s.classCode === classFilter;
+      const matchClass = !classFilter || studentClasses.includes(classFilter);
 
       return matchQuery && matchStatus && matchTrack && matchClass;
     });
@@ -565,6 +579,13 @@ class App {
 
     this.tbodyStudents.innerHTML = filtered.map((s, idx) => {
       const trackBadge = s.trackCategory === "Coding" ? "badge-coding" : "badge-robotics";
+      const studentClasses = Array.isArray(s.classCodes) && s.classCodes.length > 0
+        ? s.classCodes
+        : (s.classCode ? s.classCode.split(",").map(x => x.trim()).filter(Boolean) : []);
+      const classPills = studentClasses.length > 0
+        ? studentClasses.map(code => `<span class="class-badge-pill">${code}</span>`).join(" ")
+        : `<span style="color:#94a3b8;">-</span>`;
+
       return `
         <tr data-student-id="${s.id}">
           <td class="col-num sticky-col">${idx + 1}</td>
@@ -577,7 +598,7 @@ class App {
           <td>${s.courseTrack || '-'}</td>
           <td><strong>${s.currentModule || '-'}</strong></td>
           <td><span class="badge ${trackBadge}">${s.trackCategory}</span></td>
-          <td><code>${s.classCode || '-'}</code></td>
+          <td>${classPills}</td>
           <td>${s.studyFormat}</td>
           <td>
             <select class="filter-select" style="padding: 2px 6px; font-weight:700;" onchange="app.changeStudentStatus('${s.id}', this.value)">
@@ -653,9 +674,16 @@ class App {
       document.getElementById("student-courseTrack").value = s.courseTrack || "";
       document.getElementById("student-currentModule").value = s.currentModule || "";
       document.getElementById("student-trackCategory").value = s.trackCategory;
-      document.getElementById("student-classCode").value = s.classCode;
       document.getElementById("student-studyFormat").value = s.studyFormat;
       document.getElementById("student-status").value = s.status;
+
+      // Check assigned classes
+      const assignedClasses = Array.isArray(s.classCodes) && s.classCodes.length > 0
+        ? s.classCodes
+        : (s.classCode ? s.classCode.split(",").map(x => x.trim()).filter(Boolean) : []);
+      document.querySelectorAll("#student-classes-selector input[type='checkbox']").forEach(cb => {
+        cb.checked = assignedClasses.includes(cb.value);
+      });
     } else {
       title.textContent = "Thêm Học Viên Mới";
       document.getElementById("student-id").value = "";
@@ -671,9 +699,15 @@ class App {
           if (draft.courseTrack) document.getElementById("student-courseTrack").value = draft.courseTrack;
           if (draft.currentModule) document.getElementById("student-currentModule").value = draft.currentModule;
           if (draft.trackCategory) document.getElementById("student-trackCategory").value = draft.trackCategory;
-          if (draft.classCode) document.getElementById("student-classCode").value = draft.classCode;
           if (draft.studyFormat) document.getElementById("student-studyFormat").value = draft.studyFormat;
           if (draft.status) document.getElementById("student-status").value = draft.status;
+
+          const draftClasses = Array.isArray(draft.classCodes) 
+            ? draft.classCodes 
+            : (draft.classCode ? [draft.classCode] : []);
+          document.querySelectorAll("#student-classes-selector input[type='checkbox']").forEach(cb => {
+            cb.checked = draftClasses.includes(cb.value);
+          });
         }
       } catch (err) {}
     }
@@ -684,6 +718,15 @@ class App {
   handleStudentSubmit(e) {
     e.preventDefault();
     const id = document.getElementById("student-id").value;
+
+    const checkedBoxes = Array.from(document.querySelectorAll("#student-classes-selector input[type='checkbox']:checked"));
+    const selectedClasses = checkedBoxes.map(cb => cb.value);
+
+    if (selectedClasses.length === 0) {
+      alert("Vui lòng tích chọn ít nhất 1 mã lớp học cho học viên!");
+      return;
+    }
+
     const studentData = {
       fullName: document.getElementById("student-fullName").value.trim(),
       phone: document.getElementById("student-phone").value.trim(),
@@ -692,7 +735,8 @@ class App {
       courseTrack: document.getElementById("student-courseTrack").value.trim(),
       currentModule: document.getElementById("student-currentModule").value.trim(),
       trackCategory: document.getElementById("student-trackCategory").value,
-      classCode: document.getElementById("student-classCode").value,
+      classCodes: selectedClasses,
+      classCode: selectedClasses.join(", "),
       studyFormat: document.getElementById("student-studyFormat").value,
       status: document.getElementById("student-status").value
     };
@@ -1036,7 +1080,15 @@ class App {
       return;
     }
 
-    const classStudents = this.store.students.filter(s => s.classCode === classCode);
+    const classStudents = this.store.students.filter(s => {
+      if (Array.isArray(s.classCodes)) {
+        return s.classCodes.includes(classCode);
+      }
+      if (typeof s.classCode === "string") {
+        return s.classCode.split(",").map(x => x.trim()).includes(classCode);
+      }
+      return false;
+    });
 
     if (classStudents.length === 0) {
       this.tbodyAttendance.innerHTML = `
@@ -1090,7 +1142,7 @@ class App {
         <tr data-student-id="${s.id}">
           <td class="col-num sticky-col">${idx + 1}</td>
           <td class="col-name sticky-col">${s.fullName}</td>
-          <td class="sticky-col-2"><code>${s.classCode}</code></td>
+          <td class="sticky-col-2"><code>${classCode}</code></td>
           ${sessionCells}
           <td style="text-align:center;">
             <span class="att-count-badge ${countBadgeClass}">${absentCount} buổi</span>
@@ -1683,7 +1735,7 @@ class App {
       "Lộ trình đăng ký": s.courseTrack,
       "Học phần": s.currentModule,
       "Mã khối": s.trackCategory,
-      "Mã lớp": s.classCode,
+      "Mã lớp": Array.isArray(s.classCodes) && s.classCodes.length > 0 ? s.classCodes.join(", ") : (s.classCode || ""),
       "Hình thức học": s.studyFormat,
       "Trạng thái học viên": s.status
     }));
