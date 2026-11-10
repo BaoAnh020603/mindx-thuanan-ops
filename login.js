@@ -10,12 +10,17 @@ const roleBtnCS = document.getElementById("role-btn-cs");
 const roleBtnAdmin = document.getElementById("role-btn-admin");
 const labelLoginId = document.getElementById("label-login-id");
 const staffIdInput = document.getElementById("login-staff-id");
-const staffNameInput = document.getElementById("login-staff-name");
-const groupStaffName = document.getElementById("group-staff-name");
 const passwordInput = document.getElementById("login-password");
 const errorMsg = document.getElementById("login-error-msg");
 const btnTogglePassword = document.getElementById("btn-toggle-password");
 const formLogin = document.getElementById("form-login");
+
+// Known staff lookup map (Staff ID -> Full Name)
+const STAFF_NAMES = {
+  "14049": "Trần Thị Thảo Vy",
+  "CS14049": "Trần Thị Thảo Vy",
+  "admin": "Quản trị viên"
+};
 
 function switchRole(role) {
   currentRole = role;
@@ -24,15 +29,11 @@ function switchRole(role) {
     roleBtnAdmin.classList.remove("active");
     labelLoginId.textContent = "Mã NV *";
     staffIdInput.value = "";
-    if (groupStaffName) groupStaffName.style.display = "block";
-    if (staffNameInput) staffNameInput.required = true;
   } else {
     roleBtnAdmin.classList.add("active");
     roleBtnCS.classList.remove("active");
     labelLoginId.textContent = "Tài khoản Quản lý (Admin) *";
     staffIdInput.value = "admin";
-    if (groupStaffName) groupStaffName.style.display = "none";
-    if (staffNameInput) staffNameInput.required = false;
   }
   errorMsg.style.display = "none";
   passwordInput.value = "";
@@ -76,8 +77,8 @@ if (formLogin) {
     } else {
       if (password === "MindX@2024" && loginId.length > 0) {
         isValid = true;
-        const enteredName = staffNameInput ? staffNameInput.value.trim() : "";
-        displayName = enteredName || loginId;
+        // Lookup full name if known (e.g. 14049 -> Trần Thị Thảo Vy), otherwise use loginId
+        displayName = STAFF_NAMES[loginId] || STAFF_NAMES[loginId.toUpperCase()] || loginId;
       }
     }
 
