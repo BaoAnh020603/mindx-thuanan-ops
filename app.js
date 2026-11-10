@@ -1974,6 +1974,20 @@ class AuthManager {
       });
     }
 
+    // Greet user on new login
+    if (session.justLoggedIn) {
+      delete session.justLoggedIn;
+      sessionStorage.setItem(this.sessionKey, JSON.stringify(session));
+      localStorage.setItem(this.sessionKey, JSON.stringify(session));
+
+      setTimeout(() => {
+        const roleLabel = session.role === "ADMIN" ? "Quản lý (Admin)" : "Nhân viên CS";
+        if (window.app && window.app.showToast) {
+          window.app.showToast(`Chào mừng ${roleLabel} ${session.staffId} đã đăng nhập hệ thống!`, "success");
+        }
+      }, 500);
+    }
+
     if (window.lucide && window.lucide.createIcons) {
       window.lucide.createIcons();
     }

@@ -79,7 +79,8 @@ if (formLogin) {
         isLoggedIn: true,
         staffId: displayName,
         role: currentRole,
-        loginTime: new Date().toISOString()
+        loginTime: new Date().toISOString(),
+        justLoggedIn: true
       };
       // Always store session in both sessionStorage and localStorage to prevent session loss on accidental browser close
       sessionStorage.setItem(sessionKey, JSON.stringify(sessionData));
