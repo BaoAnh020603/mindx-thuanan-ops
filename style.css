@@ -588,6 +588,51 @@ body {
   border: 1px solid #cbd5e1 !important;
 }
 
+/* Status-specific styles for Student status dropdown in Tab 1 */
+.student-status-select {
+  font-weight: 800;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 3px 8px;
+  font-size: 0.82rem;
+  transition: all 0.15s ease;
+}
+.student-status-active {
+  background-color: #dcfce7 !important;
+  color: #15803d !important;
+  border: 1px solid #86efac !important;
+}
+.student-status-expiring {
+  background-color: #fef3c7 !important;
+  color: #b45309 !important;
+  border: 1px solid #fcd34d !important;
+}
+.student-status-handle {
+  background-color: #ffedd5 !important;
+  color: #c2410c !important;
+  border: 1px solid #fdba74 !important;
+}
+.student-status-reserve {
+  background-color: #e0e7ff !important;
+  color: #4338ca !important;
+  border: 1px solid #a5b4fc !important;
+}
+.student-status-transfer-branch {
+  background-color: #e0f2fe !important;
+  color: #0369a1 !important;
+  border: 1px solid #7dd3fc !important;
+}
+.student-status-transfer-student {
+  background-color: #fae8ff !important;
+  color: #86198f !important;
+  border: 1px solid #f0abfc !important;
+}
+.student-status-drop {
+  background-color: #fee2e2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fca5a5 !important;
+}
+
 .count-label {
   font-size: 0.84rem;
   color: #0f172a;

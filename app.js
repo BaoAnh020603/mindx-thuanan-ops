@@ -586,6 +586,14 @@ class App {
         ? studentClasses.map(code => `<span class="class-badge-pill">${code}</span>`).join(" ")
         : `<span style="color:#94a3b8;">-</span>`;
 
+      let statusColorClass = "student-status-active";
+      if (s.status === "Sắp hết phí") statusColorClass = "student-status-expiring";
+      else if (s.status === "Handle") statusColorClass = "student-status-handle";
+      else if (s.status === "Bảo lưu") statusColorClass = "student-status-reserve";
+      else if (s.status === "Chuyển cơ sở") statusColorClass = "student-status-transfer-branch";
+      else if (s.status === "Chuyển nhượng") statusColorClass = "student-status-transfer-student";
+      else if (s.status === "Nghỉ ngang") statusColorClass = "student-status-drop";
+
       return `
         <tr data-student-id="${s.id}">
           <td class="col-num sticky-col">${idx + 1}</td>
@@ -601,7 +609,7 @@ class App {
           <td>${classPills}</td>
           <td>${s.studyFormat}</td>
           <td>
-            <select class="filter-select" style="padding: 2px 6px; font-weight:700;" onchange="app.changeStudentStatus('${s.id}', this.value)">
+            <select class="filter-select student-status-select ${statusColorClass}" onchange="app.changeStudentStatus('${s.id}', this.value)">
               <option value="Active" ${s.status === 'Active' ? 'selected' : ''}>Active</option>
               <option value="Sắp hết phí" ${s.status === 'Sắp hết phí' ? 'selected' : ''}>Sắp hết phí</option>
               <option value="Handle" ${s.status === 'Handle' ? 'selected' : ''}>Handle</option>
