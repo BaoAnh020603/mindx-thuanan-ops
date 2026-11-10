@@ -10,6 +10,8 @@ const roleBtnCS = document.getElementById("role-btn-cs");
 const roleBtnAdmin = document.getElementById("role-btn-admin");
 const labelLoginId = document.getElementById("label-login-id");
 const staffIdInput = document.getElementById("login-staff-id");
+const staffNameInput = document.getElementById("login-staff-name");
+const groupStaffName = document.getElementById("group-staff-name");
 const passwordInput = document.getElementById("login-password");
 const errorMsg = document.getElementById("login-error-msg");
 const btnTogglePassword = document.getElementById("btn-toggle-password");
@@ -22,13 +24,15 @@ function switchRole(role) {
     roleBtnAdmin.classList.remove("active");
     labelLoginId.textContent = "Mã NV *";
     staffIdInput.value = "";
-    staffIdInput.placeholder = "";
+    if (groupStaffName) groupStaffName.style.display = "block";
+    if (staffNameInput) staffNameInput.required = true;
   } else {
     roleBtnAdmin.classList.add("active");
     roleBtnCS.classList.remove("active");
     labelLoginId.textContent = "Tài khoản Quản lý (Admin) *";
     staffIdInput.value = "admin";
-    staffIdInput.placeholder = "";
+    if (groupStaffName) groupStaffName.style.display = "none";
+    if (staffNameInput) staffNameInput.required = false;
   }
   errorMsg.style.display = "none";
   passwordInput.value = "";
@@ -72,7 +76,8 @@ if (formLogin) {
     } else {
       if (password === "MindX@2024" && loginId.length > 0) {
         isValid = true;
-        displayName = loginId;
+        const enteredName = staffNameInput ? staffNameInput.value.trim() : "";
+        displayName = enteredName || loginId;
       }
     }
 
@@ -80,6 +85,7 @@ if (formLogin) {
       const sessionData = {
         isLoggedIn: true,
         staffId: displayName,
+        staffCode: loginId,
         role: currentRole,
         loginTime: new Date().toISOString(),
         justLoggedIn: true
