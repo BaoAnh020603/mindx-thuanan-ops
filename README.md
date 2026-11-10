@@ -1,118 +1,234 @@
-# MindX Technology School - Thuận An Campus Ops Management System
+# MindX Technology School - Thuận An Campus Operations Management System
 
-  <strong>High-performance, sheet-like operations dashboard designed specifically for MindX Thuận An Campus staff, teachers, customer support (CS), and academic management.</strong>
+> **High-performance, spreadsheet-inspired operations management platform designed specifically for MindX Thuận An Campus academic coordinators, teachers, and Customer Support (CS) officers.**
 
----
-
-## 📌 Overview
-
-**MindX Thuận An Ops** is a specialized web-based operations workspace that replicates the fluid, intuitive experience of spreadsheet tools (Google Sheets & Microsoft Excel) while enforcing strict relational integrity, real-time metrics calculation, automatic attendance-to-makeup synchronization, and one-click multi-sheet Excel exporting.
-
-The user interface follows the official **MindX Technology School** brand guidelines with signature Crimson Red accents, ultra-crisp high-contrast typography, sharp borders, and visual status badges tailored for daily administrative workflows.
+[![Live Web Application](https://img.shields.io/badge/Live%20Demo-mindx--thuanan--ops.vercel.app-red?style=for-the-badge&logo=vercel)](https://mindx-thuanan-ops.vercel.app)
+[![Tech Stack](https://img.shields.io/badge/Stack-HTML5%20%7C%20CSS3%20%7C%20ES6%2B%20%7C%20SheetJS-blue?style=for-the-badge)](#technical-architecture)
+[![License](https://img.shields.io/badge/License-MindX%20Internal%20Proprietary-darkred?style=for-the-badge)](#license)
 
 ---
 
-## 🌟 Key Modules & Data Schema
+## 📌 Executive Overview
 
-The system consists of 4 interconnected worksheets:
+**MindX Thuận An Ops** is an enterprise-grade operational management web application tailored for **MindX Technology School - Thuận An Campus**. It combines the fluid, rapid data-entry convenience of spreadsheet applications (Google Sheets & Microsoft Excel) with the robustness of a relational database system: enforcing relational consistency across classes and students, performing real-time metric computations, automating absence-to-makeup workflows, preventing accidental data loss through multi-tiered persistence, and exporting cleanly formatted multi-sheet Excel workbooks in a single click.
+
+The interface adheres strictly to **MindX Technology School** brand guidelines, featuring signature Crimson Red (`#d91b24`), deep slate typography, crisp sheet borders, and high-contrast color-coded indicators for optimal administrative efficiency.
+
+---
+
+## 🌟 Core Functional Modules
+
+The platform is organized into **6 integrated operational worksheets**:
+
+```
+├── 1. Students Management (Quản lý học viên)
+├── 2. Classes Management (Danh sách lớp)
+├── 3. 14-Session Attendance Grid (Điểm danh 14 buổi)
+├── 4. Make-up Classes & Study Materials (Học bù & Gửi tài liệu)
+├── 5. Waiting Queue (Chờ lớp New / Level Up)
+└── 6. Student Reservations (Bảo lưu học viên)
+```
+
+---
 
 ### 1. Tab 1: Students Management (`Students Sheet`)
-* **Live Summary Metrics Cards**: Real-time counter automatically segmented by student statuses:
-  $$\text{Total Students} \mid \text{Active} \mid \text{Expiring Soon (Sắp hết phí)} \mid \text{Handle} \mid \text{Reserved (Bảo lưu)} \mid \text{Branch Transfer} \mid \text{Course Transfer} \mid \text{Dropped Out (Nghỉ ngang)}$$
-* **Schema Fields**:
-  - Full Name, Student Phone Number
-  - Parent Name, Email
-  - Course Track (e.g., Code For Kids - C4K, Fullstack Intensive, Robotics Discovery)
-  - Current Module (e.g., GA01, GA02, GB01, GB02, SB01, Python 01)
-  - Track Category (`Coding` / `Robotics`)
-  - Class Code (Dynamic dropdown bound to the Classes Sheet)
-  - Study Format (`Offline`, `Hybrid`, `Online`)
-  - Student Status (`Active`, `Sắp hết phí`, `Handle`, `Bảo lưu`, `Chuyển cơ sở`, `Chuyển nhượng`, `Nghỉ ngang`)
-* **Interactive Features**: Inline name editing, immediate status dropdown updates with metric auto-recalculation, and multi-field search/filtering.
+
+Provides a comprehensive master roster of all students enrolled across Thuận An campus.
+
+* **Live Operational Metrics**:
+  $$\text{Total Students} \mid \text{Active} \mid \text{Expiring Soon (Sắp hết phí)} \mid \text{Handling (Tuyển sinh/Xử lý)} \mid \text{Reserved} \mid \text{Branch Transfer} \mid \text{Student Transfer} \mid \text{Dropped Out}$$
+* **Data Schema**:
+  - `STT`: Row index with sticky pin.
+  - `Full Name`: Student name with inline quick-edit capability.
+  - `Phone Number`: Direct contact phone.
+  - `Parent Name` & `Email`: Family contact details.
+  - `Course Track`: Enrolled program (e.g., *Code For Kids, Fullstack Web, Robotics Discovery*).
+  - `Current Module`: Specific active module code (e.g., *GA01, GB02, SB01, Python 01*).
+  - `Track Category`: Badge-coded category (`Coding` / `Robotics`).
+  - `Class Code`: Dynamic foreign-key binding populated directly from the Classes worksheet.
+  - `Study Format`: `Offline`, `Hybrid`, or `Online`.
+  - `Student Status`: Interactive select dropdown (`Active`, `Sắp hết phí`, `Handle`, `Bảo lưu`, `Chuyển cơ sở`, `Chuyển nhượng`, `Nghỉ ngang`).
+* **Key Features**: Instant status switching with real-time recalculation of metric cards, multi-condition filtering, and search by student name, phone, parent name, or class code.
+
+---
 
 ### 2. Tab 2: Classes Management (`Classes Sheet`)
-* **Live Summary Metrics Cards**:
-  $$\text{Total Classes} \mid \text{Running} \mid \text{Pending (Chờ lớp)} \mid \text{Finished} \mid \text{Sufficient Capacity (≥ 6)} \mid \text{Low Capacity (< 6)}$$
-* **Schema Fields**:
-  - Track Category (`Coding`, `Robotics`)
-  - Unique Class Code (e.g., `TA-C4K-GB02-HB`, `TA-ROB-DISC01`)
-  - Study Format (`Offline`, `Hybrid`, `Online`)
-  - Class Schedule (Day & Time, e.g., `Sat 17:30 - 19:30`)
-  - Start Date
-  - Milestones: Checkpoint 1 (`CP1 Date`), Checkpoint 2 (`CP2 Date`), Demo Day Date
-  - Enrollment / Capacity: Automatically counted from active students assigned to this class code.
-  - Personnel: Lead Teacher, Teaching Assistant (TA), Customer Support (CS) Lead.
-  - Class Status (`Running`, `Chờ lớp`, `Finished`).
 
-### 3. Tab 3: Attendance Grid (`Attendance Sheet`)
-* **Class Selector Filter**: Instant switching between active classes.
-* **14 Sessions Grid**:
-  - Fixed sticky columns: Student Name and Class Code.
-  - 14 distinct session columns (Sessions 1 to 14, dynamically adjusted by Track: Coding (CP1 at Session 5, CP2 at Session 9, Demo Day at Session 14) and Robotics (CP1 at Session 4, CP2 at Session 8, Demo Day at Session 14)).
+Serves as the academic core regulating class schedules, milestones, teacher assignments, and capacity quotas.
+
+* **Live Operational Metrics**:
+  $$\text{Total Classes} \mid \text{Running} \mid \text{Waiting (Chờ lớp)} \mid \text{Finished} \mid \text{Sufficient Capacity (≥ 6)} \mid \text{Low Capacity (< 6)}$$
+* **Data Schema**:
+  - `Track Category`: Distinct visual badges (`Coding` / `Robotics`).
+  - `Class Code`: Unique identifier (e.g., `TA-C4K-GB02-HB`).
+  - `Study Format`: `Offline`, `Hybrid`, or `Online`.
+  - `Schedule`: Weekly slot and time (e.g., *Sat 17:30 - 19:30*).
+  - `Start Date`: Formatted cleanly in Vietnamese localized date order (`DD/MM/YYYY`).
+  - `Checkpoint 1 (CP1)`: Formatted localized date (`DD/MM/YYYY`).
+  - `Checkpoint 2 (CP2)`: Formatted localized date (`DD/MM/YYYY`).
+  - `Demo Day`: Graduation presentation date (`DD/MM/YYYY`).
+  - `Class Capacity`: Dynamically calculated in real time against active enrolled students:
+    - 🟢 `Đủ sĩ số (X/Target)`: Sufficient capacity reached.
+    - 🔴 `Thiếu sĩ số (X/Target)`: Needs CS enrollment boost.
+  - `Personnel Assignment`: Lead Teacher, Teaching Assistant (TA), and CS Officer in charge.
+  - `Class Status`: Color-coded dropdown selector:
+    - 🟢 **Running**: Soft green background (`#dcfce7`) with deep green bold text (`#15803d`).
+    - 🔴 **Finished**: Soft red background (`#fee2e2`) with crimson text (`#b91c1c`).
+    - ⚪ **Chờ lớp (Waiting)**: Clean neutral white with a subtle border.
+* **Direct Shortcuts**: One-click jump to quick attendance for any selected class.
+
+---
+
+### 3. Tab 3: 14-Session Attendance Grid (`Attendance Sheet`)
+
+A grid modeled after physical sheet attendance logs covering the standard 14 sessions of a MindX curriculum.
+
+* **Dynamic Class Filter**: Instantly isolate and inspect the student roster of any active class.
+* **Milestone Highlighting**:
+  - **Coding Track**: Checkpoint 1 at Session 5, Checkpoint 2 at Session 9, Demo Day at Session 14.
+  - **Robotics Track**: Checkpoint 1 at Session 4, Checkpoint 2 at Session 8, Demo Day at Session 14.
 * **Color-Coded Status Cycles**:
-  - 🟢 **Green (P - Present)**: Present and on time.
-  - 🟡 **Yellow (L - Late)**: Arrived late.
-  - 🔴 **Red (A - Absent Unexcused)**: Absent without leave.
-  - 🔵 **Blue (E - Absent Excused)**: Absent with notice.
-* **Smart Automation**: Marking a student as **Absent (Red or Blue)** instantly dispatches a record to the Make-up Classes worksheet.
+  - 🟢 **P (Present)**: Present and on time.
+  - 🟡 **L (Late)**: Arrived late.
+  - 🔴 **A (Absent Unexcused)**: Absent without prior notice.
+  - 🔵 **E (Absent Excused)**: Absent with approved notice.
+* **Autonomous Pipeline Hook**: Selecting an absence (**A** or **E**) immediately routes and synchronizes an unfulfilled make-up record to the Make-up Classes worksheet.
+
+---
 
 ### 4. Tab 4: Make-up Classes & Study Materials (`Make-up Sheet`)
-* **Auto-generated Absence Tracking**:
-  - Student Name, Class Code.
-  - **Round 1 Absence**: Absence Date, "Materials Sent" Checkbox, Scheduled Make-up Date/Class, Completion Status (`Chưa bù`, `Đã bù`, `Hủy bù`).
-  - **Round 2 Absence**: Absence Date, "Materials Sent" Checkbox, Scheduled Make-up Date/Class, Completion Status.
-  - Notes for Teacher and CS.
+
+Dedicated Customer Support (CS) pipeline to guarantee student progression and retention after missed classes.
+
+* **Automated Absence Registration**:
+  - Automatically captures student name, class code, session index, and absence justification.
+  - **Absence 1**: Date of missed session, `Study Materials Sent` checkbox, scheduled make-up slot, and resolution status (`Chưa bù`, `Đã bù`, `Hủy bù`).
+  - **Absence 2**: Second round tracking for recurring absences.
+  - **CS / Teacher Notes**: Freeform communication log between teacher and customer support.
 
 ---
 
-## ⚡ Data Portability & Storage
+### 5. Tab 5: Waiting Queue (`Waiting Sheet`)
 
-* **Multi-Sheet Excel Export (`.xlsx`)**: One click downloads a formatted Microsoft Excel workbook containing 3 individual sheets:
-  1. `Danh sách học viên` (Students)
-  2. `Danh sách lớp học` (Classes)
-  3. `Quản lý học bù` (Make-up Classes)
-* **Import Support**: Supports importing data backups via `.xlsx` and `.json`.
-* **Zero Data Loss**: All modifications persist locally via browser `localStorage`.
-* **Demo Data Reset**: Instant reset button preloaded with Thuận An campus demo data.
+Pipeline tracking prospective and advancing students waiting for suitable class schedules to open.
+
+* **Live Status Breakdown**:
+  $$\text{Total Waiting} \mid \text{Waiting 1 - 2 Weeks} \mid \text{Waiting 3 - 4 Weeks} \mid \text{Waiting > 1 Month (High Risk)} \mid \text{Successfully Placed}$$
+* **Data Schema**:
+  - `STT`, `Waiting Type` (`Chờ lớp New` vs `Chờ lớp Level Up`).
+  - `Student Full Name`, `Phone`, `Parent Name`, `Email`.
+  - `Course Track` & `Subject` (`pre, arm, semi, SB, SA, SI, GB, GA, GI, PTB, PTA, PTI, ...`).
+  - `Expected Start Date` & `Expected Demo/End Date` (Formatted as `DD/MM/YYYY`).
+  - `Waiting Status`: `Đang đợi lớp`, `Đã vào lớp`, `Đã xếp lớp`, `Ngừng học`.
+  - `Duration Classification`: `Học viên đã Chờ 1 - 2 tuần`, `Học viên đã Chờ 3 - 4 tuần`, `Học viên đã Chờ hơn 1 tháng`.
+  - `Notes`: Operational remarks and parent preferences.
 
 ---
 
-## 🚀 Getting Started & Deployment
+### 6. Tab 6: Student Reservations (`Reserve Sheet`)
 
-### 1. Local Development
-Because the application is built using modern vanilla Web standards (HTML5, CSS3, ES6+), no heavy build tools or Node.js environment is mandatory to run the application locally.
+Monitors students with paused tuition contracts to minimize dropout rates and handle reactivation deadlines.
 
-Using Python:
+* **Live Status Breakdown**:
+  $$\text{Total Reserved} \mid \text{Active Within Term} \mid \text{Expiring Soon (≤ 15 Days)} \mid \text{Overdue (Quá hạn)} \mid \text{Rejoined (Đã đi học lại)}$$
+* **Data Schema**:
+  - `STT`, `Student Full Name`, `Class Code`, `Phone`, `Parent Name`, `Email`, `Course Track`.
+  - `Reservation Type`: `Bảo lưu thường` (Standard) vs `Bảo lưu vượt hạn` (Extended).
+  - `Reservation Status`: `Đang bảo lưu`, `Nghỉ ngang`, `Đã đi học lại`.
+  - `Start Date` & `End Date` (Formatted as `DD/MM/YYYY`).
+  - `Urgency Status (Tình trạng thời hạn)`: Automatically calculated from current date vs expiration date:
+    - 🟢 **Còn hạn**: Active within permitted period.
+    - 🟡 **Sắp tới hạn**: Expiration within 15 calendar days — CS proactive follow-up required.
+    - 🔴 **Quá hạn**: Overdue reservation — parent outreach required.
+  - `Notes`: Internal follow-up logs.
+
+---
+
+## 🛡️ Enterprise Data Reliability & Zero-Loss System
+
+To eliminate operational risk during long shifts, the application incorporates a multi-tiered data protection suite:
+
+1. **Keystroke-by-Keystroke Draft Autosave**:
+   - As CS officers or academic staff type into modal input fields (Class creation, Student enrollment), every keystroke is saved to a persistent draft cache (`mx_ta_draft_*`).
+   - If the user accidentally closes the browser tab or presses Escape, reopening the modal **automatically restores the draft** in full.
+2. **Accidental Tab Closure Guard (`beforeunload`)**:
+   - If any modal is open with unsaved changes or active drafts, the browser triggers a native modal alert warning the user before allowing the tab to terminate.
+3. **Redundant Dual-Key Local Storage**:
+   - All state modifications are simultaneously written to primary keys (`mx_ta_*`) and secondary backup mirrors (`mx_ta_*_backup`).
+   - If a browser session or cache clears primary keys, the loader transparently falls back to the mirror image.
+4. **Permanent Session Persistence**:
+   - Staff credentials and authentication sessions are preserved across browser restarts.
+5. **Real-time Autosave Indicator**:
+   - The top header provides an active status badge: `🟢 Tự động lưu an toàn` with the timestamp of the latest persistent commit.
+
+---
+
+## 📊 Data Portability & Excel Integration
+
+The platform provides end-to-end support for Microsoft Excel (`.xlsx`) via [SheetJS](https://sheetjs.com/):
+
+* **One-Click Multi-Sheet Workbook Export**:
+  Generates a unified Excel file named `MindX_ThuanAn_Ops_YYYY-MM-DD.xlsx` containing 5 dedicated worksheets:
+  1. `Danh sách học viên` (Students Roster)
+  2. `Danh sách lớp học` (Classes Catalog with capacity status and personnel)
+  3. `Quản lý học bù` (Make-up Classes & Study Materials log)
+  4. `Chờ lớp` (Waiting list with duration tiers)
+  5. `Bảo lưu` (Reservations with urgency indicators)
+* **Date Localization in Exports**:
+  All date fields are formatted in standard Vietnamese chronological order (`DD/MM/YYYY`) both in the UI and in exported Excel workbooks.
+* **JSON / Excel Import Support**:
+  Enables full state restoration from previously exported files.
+
+---
+
+## 🔐 Authentication & Roles
+
+* **Role: Customer Support (CS)**
+  - Access: Daily operations, class creation, student onboarding, attendance, make-up scheduling, waiting queue, reservations.
+* **Role: Administrator (Admin)**
+  - Access: Full master control with elevated administrative tags.
+
+---
+
+## 💻 Technical Architecture
+
+* **Frontend Engine**: Pure Vanilla ES6+ Object-Oriented Architecture (`App`, `Store`, `AuthManager`).
+* **Styling Framework**: Custom responsive CSS3 design system with CSS custom properties (variables), native CSS Grid, Flexbox, and sticky headers/columns.
+* **Icons**: [Lucide Icons](https://lucide.dev/) (lightweight SVG vector icons).
+* **Excel Engine**: [SheetJS (xlsx.full.min.js)](https://github.com/SheetJS/sheetjs).
+* **Hosting**: Static edge hosting on [Vercel](https://vercel.com) (`vercel.json` pre-configured).
+
+---
+
+## 🚀 Local Development & Deployment
+
+### Run Locally
+Since this application relies strictly on standardized modern Web APIs, no heavy Node.js toolchain or package compilation is required:
+
 ```bash
+# Using Python 3 built-in HTTP server
 python -m http.server 3000
+
+# Or using Node.js npx serve
+npx serve .
 ```
-Then navigate to: `http://localhost:3000` in your web browser.
 
-### 2. Deployment to Vercel (1-Click Static Deployment)
+Open `http://localhost:3000` in your web browser.
 
-1. **Commit and push to GitHub**:
-   ```bash
-   git add .
-   git commit -m "feat: complete mindx thuan an ops management web app"
-   git branch -M main
-   git remote add origin https://github.com/<your-username>/mindx-thuanan-ops.git
-   git push -u origin main
-   ```
+### Deploy to Vercel
 
-2. **Connect to Vercel**:
-   - Log into [vercel.com](https://vercel.com).
-   - Click **Add New** $\rightarrow$ **Project**.
-   - Select your GitHub repository `mindx-thuanan-ops`.
-   - The pre-configured [`vercel.json`](vercel.json) will automatically deploy the static application instantly.
+```bash
+# Push updates to GitHub
+git add .
+git commit -m "feat: complete operations suite"
+git push origin main
+```
+
+Vercel automatically detects commits to the `main` branch and triggers instantaneous global edge deployment.
 
 ---
 
-## 🎨 Design Principles
-* **Non-AI Aesthetic**: Built with clean, human-designed functional aesthetics modeled after enterprise operations suites.
-* **100% Text Legibility**: High-contrast slate typography (`#0f172a` text on `#ffffff` backgrounds) optimized for extended office viewing.
-* **MindX Brand Compliance**: MindX Crimson Red primary accents (`#d91b24`), branded badges, and high-resolution Thuận An campus assets.
+## 📄 License & Proprietary Notice
 
----
-
-## 📄 License
-Internal Operations Software for **MindX Technology School - Thuận An Campus**. All rights reserved.
+This software is an internal proprietary operations suite developed exclusively for **MindX Technology School - Thuận An Campus**.  
+*All rights reserved. Copyright © MindX Technology School.*
