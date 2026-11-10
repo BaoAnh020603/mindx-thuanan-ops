@@ -1949,6 +1949,18 @@ class AuthManager {
       return;
     }
 
+    // Auto map known staff codes to full names if session still has old code
+    const STAFF_MAP = {
+      "14049": "Trần Thị Thảo Vy",
+      "CS14049": "Trần Thị Thảo Vy",
+      "ADMIN": "Administrator",
+      "admin": "Administrator"
+    };
+
+    if (STAFF_MAP[session.staffId] || STAFF_MAP[String(session.staffId).toUpperCase()]) {
+      session.staffId = STAFF_MAP[session.staffId] || STAFF_MAP[String(session.staffId).toUpperCase()];
+    }
+
     if (this.userPill) {
       this.userPill.style.display = "inline-flex";
       if (this.userDisplayName) {
