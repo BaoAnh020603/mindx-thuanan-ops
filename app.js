@@ -284,10 +284,10 @@ class App {
 
     // Clear all tables to start 100% fresh
     this.btnClearAll.addEventListener("click", () => {
-      if (confirm("Chị có chắc chắn muốn xóa trắng tất cả dữ liệu để nhập lại từ đầu không?")) {
+      if (confirm("Bạn có chắc chắn muốn xóa trắng tất cả dữ liệu để nhập lại từ đầu không?")) {
         this.store.clearAll();
         this.render();
-        this.showToast("Đã xóa trắng dữ liệu. Chị có thể bắt đầu nhập mới!");
+        this.showToast("Đã xóa trắng dữ liệu. Bạn có thể bắt đầu nhập mới!");
       }
     });
 
@@ -353,7 +353,7 @@ class App {
       const hasStudentDraft = !!localStorage.getItem("mx_ta_draft_student");
       if (isAnyModalOpen || hasClassDraft || hasStudentDraft) {
         e.preventDefault();
-        e.returnValue = "Chị đang có dữ liệu nhập dở hoặc chưa bấm Lưu. Chị có chắc muốn thoát không?";
+        e.returnValue = "Bạn đang có dữ liệu nhập dở hoặc chưa bấm Lưu. Bạn có chắc muốn thoát không?";
         return e.returnValue;
       }
     });
@@ -559,7 +559,7 @@ class App {
     this.studentsTableCount.textContent = `Hiển thị ${filtered.length} / ${total} học viên`;
 
     if (filtered.length === 0) {
-      this.tbodyStudents.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 40px; color: #64748b; font-weight:600;">Chưa có dữ liệu học viên. Chị Vy bấm nút <b>"Thêm Học Viên"</b> ở góc trên bên phải để bắt đầu nhập.</td></tr>`;
+      this.tbodyStudents.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 40px; color: #64748b; font-weight:600;">Chưa có dữ liệu học viên. Bạn bấm nút <b>"Thêm Học Viên"</b> ở góc trên bên phải để bắt đầu nhập.</td></tr>`;
       return;
     }
 
@@ -634,7 +634,7 @@ class App {
     form.reset();
 
     if (this.store.classes.length === 0) {
-      if (confirm("Hiện chưa có lớp học nào trong hệ thống. Chị có muốn tạo lớp học trước không?")) {
+      if (confirm("Hiện chưa có lớp học nào trong hệ thống. Bạn có muốn tạo lớp học trước không?")) {
         this.switchTab("classes");
         this.openClassModal();
         return;
@@ -722,7 +722,7 @@ class App {
   deleteStudent(id) {
     const student = this.store.students.find(s => s.id === id);
     if (!student) return;
-    if (confirm(`Chị có chắc muốn xóa học viên "${student.fullName}" không?`)) {
+    if (confirm(`Bạn có chắc muốn xóa học viên "${student.fullName}" không?`)) {
       this.store.students = this.store.students.filter(s => s.id !== id);
       this.store.save();
       this.render();
@@ -777,7 +777,7 @@ class App {
     this.classesTableCount.textContent = `Hiển thị ${filtered.length} / ${total} lớp`;
 
     if (filtered.length === 0) {
-      this.tbodyClasses.innerHTML = `<tr><td colspan="15" style="text-align: center; padding: 40px; color: #64748b; font-weight:600;">Chưa có lớp học nào trong hệ thống. Chị Vy bấm nút <b>"Thêm Lớp Học"</b> để bắt đầu tạo lớp.</td></tr>`;
+      this.tbodyClasses.innerHTML = `<tr><td colspan="15" style="text-align: center; padding: 40px; color: #64748b; font-weight:600;">Chưa có lớp học nào trong hệ thống. Bạn bấm nút <b>"Thêm Lớp Học"</b> để bắt đầu tạo lớp.</td></tr>`;
       return;
     }
 
@@ -946,7 +946,7 @@ class App {
   deleteClass(classId) {
     const cls = this.store.classes.find(c => c.id === classId);
     if (!cls) return;
-    if (confirm(`Chị có chắc muốn xóa lớp "${cls.classCode}" không?`)) {
+    if (confirm(`Bạn có chắc muốn xóa lớp "${cls.classCode}" không?`)) {
       this.store.classes = this.store.classes.filter(c => c.id !== classId);
       this.store.save();
       this.render();
@@ -1029,7 +1029,7 @@ class App {
       this.tbodyAttendance.innerHTML = `
         <tr>
           <td colspan="18" style="text-align: center; padding: 40px; color: #64748b; font-weight:600;">
-            Chưa có lớp nào được chọn. Chị Vy vui lòng tạo lớp học ở Tab 2 trước.
+            Chưa có lớp nào được chọn. Bạn vui lòng tạo lớp học ở Tab 2 trước.
           </td>
         </tr>
       `;
@@ -1042,7 +1042,7 @@ class App {
       this.tbodyAttendance.innerHTML = `
         <tr>
           <td colspan="18" style="text-align: center; padding: 40px; color: #64748b; font-weight:600;">
-            Lớp <b>${classCode}</b> hiện chưa có học viên nào. Chị Vy qua Tab 1 để thêm học viên vào lớp này nhé.
+            Lớp <b>${classCode}</b> hiện chưa có học viên nào. Bạn qua Tab 1 để thêm học viên vào lớp này nhé.
           </td>
         </tr>
       `;
@@ -1281,7 +1281,7 @@ class App {
   }
 
   deleteMakeup(id) {
-    if (confirm("Chị có chắc muốn xóa bản ghi theo dõi học bù này không?")) {
+    if (confirm("Bạn có chắc muốn xóa bản ghi theo dõi học bù này không?")) {
       this.store.makeup = this.store.makeup.filter(m => m.id !== id);
       this.store.save();
       this.renderMakeup();
@@ -1476,7 +1476,7 @@ class App {
   }
 
   deleteWaiting(id) {
-    if (confirm("Chị có chắc chắn muốn xóa học viên khỏi danh sách chờ lớp?")) {
+    if (confirm("Bạn có chắc chắn muốn xóa học viên khỏi danh sách chờ lớp?")) {
       this.store.waiting = (this.store.waiting || []).filter(w => w.id !== id);
       this.store.save();
       this.render();
@@ -1657,7 +1657,7 @@ class App {
   }
 
   deleteReserve(id) {
-    if (confirm("Chị có chắc chắn muốn xóa hồ sơ bảo lưu này không?")) {
+    if (confirm("Bạn có chắc chắn muốn xóa hồ sơ bảo lưu này không?")) {
       this.store.reserve = (this.store.reserve || []).filter(r => r.id !== id);
       this.store.save();
       this.render();
@@ -1867,7 +1867,7 @@ class AuthManager {
 
     if (this.btnLogout) {
       this.btnLogout.addEventListener("click", () => {
-        if (confirm("Chị có chắc chắn muốn đăng xuất không?")) {
+        if (confirm("Bạn có chắc chắn muốn đăng xuất không?")) {
           sessionStorage.removeItem(this.sessionKey);
           localStorage.removeItem(this.sessionKey);
           window.location.replace("index.html");
