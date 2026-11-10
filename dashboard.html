@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <!-- INSTANT SESSION GUARD: Redirects to index.html if not authenticated -->
+  <!-- INSTANT SESSION GUARD & USER IDENTITY RESOLVER -->
   <script>
     (function() {
       try {
@@ -13,6 +13,19 @@
         var parsed = JSON.parse(session);
         if (!parsed || !parsed.isLoggedIn) {
           window.location.replace('index.html');
+          return;
+        }
+        // Staff Name Lookup Map
+        var STAFF_MAP = {
+          "14049": "Trần Thị Thảo Vy",
+          "CS14049": "Trần Thị Thảo Vy",
+          "ADMIN": "Quản trị viên",
+          "admin": "Quản trị viên"
+        };
+        if (STAFF_MAP[parsed.staffId] || STAFF_MAP[String(parsed.staffId).toUpperCase()]) {
+          parsed.staffId = STAFF_MAP[parsed.staffId] || STAFF_MAP[String(parsed.staffId).toUpperCase()];
+          sessionStorage.setItem('mx_ta_auth_session', JSON.stringify(parsed));
+          localStorage.setItem('mx_ta_auth_session', JSON.stringify(parsed));
         }
       } catch(e) {
         window.location.replace('index.html');
@@ -58,11 +71,26 @@
           <div id="autosave-indicator" style="font-size: 12px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: #f1f5f9; border-radius: 9999px; border: 1px solid #e2e8f0;">
             <span style="color:#10b981;">●</span> Tự động lưu an toàn
           </div>
-          <div class="user-info-pill" id="user-header-pill" style="display:none;">
+          <div class="user-info-pill" id="user-header-pill">
             <span class="role-tag" id="user-role-tag">ROLE: CS</span>
-            <span id="user-display-name">NV-CS</span>
+            <span id="user-display-name">Trần Thị Thảo Vy</span>
             <button id="btn-logout" class="btn-logout" title="Đăng xuất"><i data-lucide="log-out"></i></button>
           </div>
+          <script>
+            (function() {
+              try {
+                var s = JSON.parse(sessionStorage.getItem('mx_ta_auth_session') || localStorage.getItem('mx_ta_auth_session'));
+                if (s) {
+                  var map = { "14049": "Trần Thị Thảo Vy", "CS14049": "Trần Thị Thảo Vy", "admin": "Quản trị viên", "ADMIN": "Quản trị viên" };
+                  var n = map[s.staffId] || s.staffId || 'Trần Thị Thảo Vy';
+                  var nameEl = document.getElementById('user-display-name');
+                  var roleEl = document.getElementById('user-role-tag');
+                  if (nameEl) nameEl.textContent = n;
+                  if (roleEl) roleEl.textContent = 'ROLE: ' + (s.role || 'CS');
+                }
+              } catch(e) {}
+            })();
+          </script>
           <button id="btn-export-excel" class="btn btn-secondary" title="Xuất toàn bộ 3 phân hệ ra file Excel">
             <i data-lucide="download"></i> Xuất Excel (.xlsx)
           </button>
@@ -945,7 +973,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=20261110_01"></script>
+  <script src="app.js?v=20261110_02"></script>
 
 </body>
 </html>
