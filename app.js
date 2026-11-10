@@ -26,20 +26,51 @@ class Store {
   load(key, fallback) {
     try {
       const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : fallback;
+      if (data) {
+        return JSON.parse(data);
+      }
+      // Failover to secondary backup if main key is unexpectedly empty
+      const backupData = localStorage.getItem(`${key}_backup`);
+      if (backupData) {
+        return JSON.parse(backupData);
+      }
+      return fallback;
     } catch (e) {
       console.error(`Error loading ${key}`, e);
+      try {
+        const backupData = localStorage.getItem(`${key}_backup`);
+        if (backupData) return JSON.parse(backupData);
+      } catch (err) {}
       return fallback;
     }
   }
 
   save() {
-    localStorage.setItem("mx_ta_classes", JSON.stringify(this.classes));
-    localStorage.setItem("mx_ta_students", JSON.stringify(this.students));
-    localStorage.setItem("mx_ta_attendance", JSON.stringify(this.attendance));
-    localStorage.setItem("mx_ta_makeup", JSON.stringify(this.makeup));
-    localStorage.setItem("mx_ta_waiting", JSON.stringify(this.waiting));
-    localStorage.setItem("mx_ta_reserve", JSON.stringify(this.reserve));
+    try {
+      localStorage.setItem("mx_ta_classes", JSON.stringify(this.classes));
+      localStorage.setItem("mx_ta_students", JSON.stringify(this.students));
+      localStorage.setItem("mx_ta_attendance", JSON.stringify(this.attendance));
+      localStorage.setItem("mx_ta_makeup", JSON.stringify(this.makeup));
+      localStorage.setItem("mx_ta_waiting", JSON.stringify(this.waiting));
+      localStorage.setItem("mx_ta_reserve", JSON.stringify(this.reserve));
+
+      // Multi-layer redundancy backup
+      localStorage.setItem("mx_ta_classes_backup", JSON.stringify(this.classes));
+      localStorage.setItem("mx_ta_students_backup", JSON.stringify(this.students));
+      localStorage.setItem("mx_ta_attendance_backup", JSON.stringify(this.attendance));
+      localStorage.setItem("mx_ta_makeup_backup", JSON.stringify(this.makeup));
+      localStorage.setItem("mx_ta_waiting_backup", JSON.stringify(this.waiting));
+      localStorage.setItem("mx_ta_reserve_backup", JSON.stringify(this.reserve));
+      localStorage.setItem("mx_ta_last_saved", new Date().toISOString());
+
+      // Update auto-save indicator in UI if present
+      const badge = document.getElementById("autosave-indicator");
+      if (badge) {
+        badge.innerHTML = `<span style="color:#10b981;">●</span> Đã lưu tự động (${new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'})})`;
+      }
+    } catch(err) {
+      console.error("Lỗi khi lưu dữ liệu vào localStorage:", err);
+    }
   }
 
   clearAll() {
@@ -296,6 +327,76 @@ class App {
     this.formClass.addEventListener("submit", (e) => this.handleClassSubmit(e));
     if (this.formWaiting) this.formWaiting.addEventListener("submit", (e) => this.handleWaitingSubmit(e));
     if (this.formReserve) this.formReserve.addEventListener("submit", (e) => this.handleReserveSubmit(e));
+
+    // Auto-save form drafts on keystroke (prevent losing data if user accidentally closes browser)
+    this.setupDraftAutosave();
+
+    // Prevent accidental page close / refresh if modal is open or has unsaved draft
+    window.addEventListener("beforeunload", (e) => {
+      const isAnyModalOpen = document.querySelector(".modal-backdrop.open");
+      const hasClassDraft = !!localStorage.getItem("mx_ta_draft_class");
+      const hasStudentDraft = !!localStorage.getItem("mx_ta_draft_student");
+      if (isAnyModalOpen || hasClassDraft || hasStudentDraft) {
+        e.preventDefault();
+        e.returnValue = "Chị đang có dữ liệu nhập dở hoặc chưa bấm Lưu. Chị có chắc muốn thoát không?";
+        return e.returnValue;
+      }
+    });
+  }
+
+  setupDraftAutosave() {
+    // Listen to input changes in class form
+    const classInputs = this.formClass.querySelectorAll("input, select, textarea");
+    classInputs.forEach(input => {
+      input.addEventListener("input", () => {
+        const isEditing = !!this.formClass.dataset.classId;
+        if (!isEditing) {
+          const draft = {
+            trackCategory: document.getElementById("class-trackCategory")?.value || "",
+            classCode: document.getElementById("class-classCode")?.value || "",
+            studyFormat: document.getElementById("class-studyFormat")?.value || "",
+            maxCapacity: document.getElementById("class-maxCapacity")?.value || "",
+            schedule: document.getElementById("class-schedule")?.value || "",
+            startDate: document.getElementById("class-startDate")?.value || "",
+            cp1Date: document.getElementById("class-cp1Date")?.value || "",
+            cp2Date: document.getElementById("class-cp2Date")?.value || "",
+            demoDate: document.getElementById("class-demoDate")?.value || "",
+            teacher: document.getElementById("class-teacher")?.value || "",
+            ta: document.getElementById("class-ta")?.value || "",
+            cs: document.getElementById("class-cs")?.value || "",
+            status: document.getElementById("class-status")?.value || "Chờ lớp"
+          };
+          if (draft.classCode || draft.teacher || draft.schedule) {
+            localStorage.setItem("mx_ta_draft_class", JSON.stringify(draft));
+          }
+        }
+      });
+    });
+
+    // Listen to input changes in student form
+    const studentInputs = this.formStudent.querySelectorAll("input, select, textarea");
+    studentInputs.forEach(input => {
+      input.addEventListener("input", () => {
+        const isEditing = !!document.getElementById("student-id")?.value;
+        if (!isEditing) {
+          const draft = {
+            fullName: document.getElementById("student-fullName")?.value || "",
+            phone: document.getElementById("student-phone")?.value || "",
+            parentName: document.getElementById("student-parentName")?.value || "",
+            email: document.getElementById("student-email")?.value || "",
+            courseTrack: document.getElementById("student-courseTrack")?.value || "",
+            currentModule: document.getElementById("student-currentModule")?.value || "",
+            trackCategory: document.getElementById("student-trackCategory")?.value || "",
+            classCode: document.getElementById("student-classCode")?.value || "",
+            studyFormat: document.getElementById("student-studyFormat")?.value || "",
+            status: document.getElementById("student-status")?.value || "Active"
+          };
+          if (draft.fullName || draft.phone || draft.parentName) {
+            localStorage.setItem("mx_ta_draft_student", JSON.stringify(draft));
+          }
+        }
+      });
+    });
   }
 
   showToast(message) {
@@ -543,6 +644,23 @@ class App {
     } else {
       title.textContent = "Thêm Học Viên Mới";
       document.getElementById("student-id").value = "";
+
+      // Restore unsaved draft if previously exited without saving
+      try {
+        const draft = JSON.parse(localStorage.getItem("mx_ta_draft_student"));
+        if (draft) {
+          if (draft.fullName) document.getElementById("student-fullName").value = draft.fullName;
+          if (draft.phone) document.getElementById("student-phone").value = draft.phone;
+          if (draft.parentName) document.getElementById("student-parentName").value = draft.parentName;
+          if (draft.email) document.getElementById("student-email").value = draft.email;
+          if (draft.courseTrack) document.getElementById("student-courseTrack").value = draft.courseTrack;
+          if (draft.currentModule) document.getElementById("student-currentModule").value = draft.currentModule;
+          if (draft.trackCategory) document.getElementById("student-trackCategory").value = draft.trackCategory;
+          if (draft.classCode) document.getElementById("student-classCode").value = draft.classCode;
+          if (draft.studyFormat) document.getElementById("student-studyFormat").value = draft.studyFormat;
+          if (draft.status) document.getElementById("student-status").value = draft.status;
+        }
+      } catch (err) {}
     }
 
     this.modalStudent.classList.add("open");
@@ -577,6 +695,8 @@ class App {
       };
       this.store.students.unshift(newStudent);
       this.showToast("Thêm học viên mới thành công!");
+      // Clear draft on successful creation
+      localStorage.removeItem("mx_ta_draft_student");
     }
 
     this.store.save();
@@ -735,6 +855,26 @@ class App {
     } else {
       title.textContent = "Thêm Lớp Học Mới";
       delete form.dataset.classId;
+
+      // Restore unsaved draft if previously exited without saving
+      try {
+        const draft = JSON.parse(localStorage.getItem("mx_ta_draft_class"));
+        if (draft) {
+          if (draft.trackCategory) document.getElementById("class-trackCategory").value = draft.trackCategory;
+          if (draft.classCode) document.getElementById("class-classCode").value = draft.classCode;
+          if (draft.studyFormat) document.getElementById("class-studyFormat").value = draft.studyFormat;
+          if (draft.maxCapacity) document.getElementById("class-maxCapacity").value = draft.maxCapacity;
+          if (draft.schedule) document.getElementById("class-schedule").value = draft.schedule;
+          if (draft.startDate) document.getElementById("class-startDate").value = draft.startDate;
+          if (draft.cp1Date) document.getElementById("class-cp1Date").value = draft.cp1Date;
+          if (draft.cp2Date) document.getElementById("class-cp2Date").value = draft.cp2Date;
+          if (draft.demoDate) document.getElementById("class-demoDate").value = draft.demoDate;
+          if (draft.teacher) document.getElementById("class-teacher").value = draft.teacher;
+          if (draft.ta) document.getElementById("class-ta").value = draft.ta;
+          if (draft.cs) document.getElementById("class-cs").value = draft.cs;
+          if (draft.status) document.getElementById("class-status").value = draft.status;
+        }
+      } catch (err) {}
     }
 
     this.modalClass.classList.add("open");
@@ -776,6 +916,8 @@ class App {
       };
       this.store.classes.push(newClass);
       this.showToast("Thêm lớp học mới thành công!");
+      // Clear draft on successful creation
+      localStorage.removeItem("mx_ta_draft_class");
     }
 
     this.store.save();
@@ -1657,17 +1799,6 @@ class App {
     }
   }
 }
-
-// Clear any existing localStorage mock demo if it came from the initial demo template
-try {
-  const existingClasses = localStorage.getItem("mx_ta_classes");
-  if (existingClasses && existingClasses.includes("TA-C4K-GB02-HB")) {
-    localStorage.removeItem("mx_ta_classes");
-    localStorage.removeItem("mx_ta_students");
-    localStorage.removeItem("mx_ta_attendance");
-    localStorage.removeItem("mx_ta_makeup");
-  }
-} catch(e) {}
 
 // Instantiate on DOM load
 window.addEventListener("DOMContentLoaded", () => {

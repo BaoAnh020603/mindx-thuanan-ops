@@ -55,11 +55,14 @@
 
       <div class="header-right">
         <div class="quick-actions">
-        <div class="user-info-pill" id="user-header-pill" style="display:none;">
-          <span class="role-tag" id="user-role-tag">ROLE: CS</span>
-          <span id="user-display-name">NV-CS</span>
-          <button id="btn-logout" class="btn-logout" title="Đăng xuất"><i data-lucide="log-out"></i></button>
-        </div>
+          <div id="autosave-indicator" style="font-size: 12px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: #f1f5f9; border-radius: 9999px; border: 1px solid #e2e8f0;">
+            <span style="color:#10b981;">●</span> Tự động lưu an toàn
+          </div>
+          <div class="user-info-pill" id="user-header-pill" style="display:none;">
+            <span class="role-tag" id="user-role-tag">ROLE: CS</span>
+            <span id="user-display-name">NV-CS</span>
+            <button id="btn-logout" class="btn-logout" title="Đăng xuất"><i data-lucide="log-out"></i></button>
+          </div>
           <button id="btn-export-excel" class="btn btn-secondary" title="Xuất toàn bộ 3 phân hệ ra file Excel">
             <i data-lucide="download"></i> Xuất Excel (.xlsx)
           </button>

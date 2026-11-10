@@ -81,12 +81,9 @@ if (formLogin) {
         role: currentRole,
         loginTime: new Date().toISOString()
       };
+      // Always store session in both sessionStorage and localStorage to prevent session loss on accidental browser close
       sessionStorage.setItem(sessionKey, JSON.stringify(sessionData));
-      if (rememberMe) {
-        localStorage.setItem(sessionKey, JSON.stringify(sessionData));
-      } else {
-        localStorage.removeItem(sessionKey);
-      }
+      localStorage.setItem(sessionKey, JSON.stringify(sessionData));
       // Redirect straight to dashboard.html
       window.location.replace("dashboard.html");
     } else {
