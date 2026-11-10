@@ -20,9 +20,9 @@ function switchRole(role) {
   if (role === "CS") {
     roleBtnCS.classList.add("active");
     roleBtnAdmin.classList.remove("active");
-    labelLoginId.textContent = "Họ và tên CS (hoặc Mã NV) *";
+    labelLoginId.textContent = "Mã NV *";
     staffIdInput.value = "";
-    staffIdInput.placeholder = "Ví dụ: Trần Thị Thảo Vy";
+    staffIdInput.placeholder = "";
   } else {
     roleBtnAdmin.classList.add("active");
     roleBtnCS.classList.remove("active");
