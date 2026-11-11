@@ -932,6 +932,7 @@ class App {
   }
 
   openStudentModal(studentId = null) {
+    this.populateDropdowns();
     const title = document.getElementById("modal-student-title");
     const form = this.formStudent;
     form.reset();
