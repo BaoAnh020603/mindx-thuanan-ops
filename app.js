@@ -37,6 +37,55 @@ class Store {
     // Sync makeup table with attendance absences on initial load
     this.syncMakeupFromAttendance();
     this.syncWaitingFromStudents();
+    this.syncReserveFromStudents();
+  }
+
+  // Auto sync students with status "Bảo lưu" to reserve list
+  syncReserveFromStudents() {
+    if (!this.reserve) this.reserve = [];
+    const reserveStudents = (this.students || []).filter(s => s.status === "Bảo lưu");
+
+    for (const s of reserveStudents) {
+      const existing = this.reserve.find(r =>
+        (r.studentId && r.studentId === s.id) ||
+        (s.phone && r.phone === s.phone) ||
+        (r.fullName && r.fullName.toLowerCase() === s.fullName.toLowerCase())
+      );
+
+      const clsCode = Array.isArray(s.classCodes) ? s.classCodes.join(", ") : (s.classCode || "");
+
+      if (existing) {
+        existing.studentId = s.id;
+        existing.fullName = s.fullName;
+        if (clsCode) existing.classCode = clsCode;
+        if (s.phone) existing.phone = s.phone;
+        if (s.parentName) existing.parentName = s.parentName;
+        if (s.email) existing.email = s.email;
+        if (s.courseTrack) existing.courseTrack = s.courseTrack;
+      } else {
+        const todayStr = new Date().toISOString().split("T")[0];
+        // Default reserve duration 3 months
+        const endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + 3);
+        const endStr = endDate.toISOString().split("T")[0];
+
+        this.reserve.push({
+          id: "rs-" + Date.now() + "-" + Math.random().toString(36).substr(2, 4),
+          studentId: s.id,
+          fullName: s.fullName,
+          classCode: clsCode,
+          phone: s.phone || "",
+          parentName: s.parentName || "",
+          email: s.email || "",
+          courseTrack: s.courseTrack || "",
+          type: "Bảo lưu thường",
+          status: "Đang bảo lưu",
+          startDate: todayStr,
+          endDate: endStr,
+          note: `Tự động đồng bộ từ Tab 1 khi học viên có trạng thái "Bảo lưu"`
+        });
+      }
+    }
   }
 
   // Auto sync students with status "Chờ lớp New" or "Chờ lớp Level Up" to waiting list
@@ -796,6 +845,56 @@ class App {
     }
   }
 
+  syncStudentToReserve(student, status) {
+    if (!student || status !== "Bảo lưu") return;
+    if (!this.store.reserve) this.store.reserve = [];
+
+    const existing = this.store.reserve.find(r => 
+      (r.studentId && r.studentId === student.id) ||
+      (student.phone && r.phone === student.phone) ||
+      (r.fullName && r.fullName.toLowerCase() === student.fullName.toLowerCase())
+    );
+
+    const clsCode = Array.isArray(student.classCodes) ? student.classCodes.join(", ") : (student.classCode || "");
+
+    if (existing) {
+      existing.fullName = student.fullName;
+      existing.studentId = student.id;
+      if (clsCode) existing.classCode = clsCode;
+      if (student.phone) existing.phone = student.phone;
+      if (student.parentName) existing.parentName = student.parentName;
+      if (student.email) existing.email = student.email;
+      if (student.courseTrack) existing.courseTrack = student.courseTrack;
+    } else {
+      const todayStr = new Date().toISOString().split("T")[0];
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + 3);
+      const endStr = endDate.toISOString().split("T")[0];
+
+      const newReserve = {
+        id: "rs-" + Date.now() + "-" + Math.random().toString(36).substr(2, 4),
+        studentId: student.id,
+        fullName: student.fullName,
+        classCode: clsCode,
+        phone: student.phone || "",
+        parentName: student.parentName || "",
+        email: student.email || "",
+        courseTrack: student.courseTrack || "",
+        type: "Bảo lưu thường",
+        status: "Đang bảo lưu",
+        startDate: todayStr,
+        endDate: endStr,
+        note: `Tự động đồng bộ từ Tab 1 khi học viên có trạng thái "Bảo lưu"`
+      };
+      this.store.reserve.unshift(newReserve);
+    }
+
+    this.renderReserve();
+    if (document.getElementById("badge-reserve-count")) {
+      document.getElementById("badge-reserve-count").textContent = this.store.reserve.length;
+    }
+  }
+
   changeStudentStatus(studentId, newStatus) {
     const student = this.store.students.find(s => s.id === studentId);
     if (student) {
@@ -804,6 +903,11 @@ class App {
       // Auto sync to Tab 5 (Chờ lớp) if status is Chờ lớp New or Chờ lớp Level Up
       if (newStatus === "Chờ lớp New" || newStatus === "Chờ lớp Level Up") {
         this.syncStudentToWaiting(student, newStatus);
+      }
+
+      // Auto sync to Tab 6 (Bảo lưu) if status is Bảo lưu
+      if (newStatus === "Bảo lưu") {
+        this.syncStudentToReserve(student, newStatus);
       }
 
       this.store.save();
@@ -933,6 +1037,7 @@ class App {
       if (index !== -1) {
         this.store.students[index] = { ...this.store.students[index], ...studentData };
         this.syncStudentToWaiting(this.store.students[index], studentData.status);
+        this.syncStudentToReserve(this.store.students[index], studentData.status);
         this.showToast("Cập nhật học viên thành công!");
       }
     } else {
@@ -942,6 +1047,7 @@ class App {
       };
       this.store.students.unshift(newStudent);
       this.syncStudentToWaiting(newStudent, studentData.status);
+      this.syncStudentToReserve(newStudent, studentData.status);
       this.showToast("Thêm học viên mới thành công!");
       // Clear draft on successful creation
       localStorage.removeItem("mx_ta_draft_student");
