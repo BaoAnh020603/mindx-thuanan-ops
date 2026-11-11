@@ -127,13 +127,18 @@ class Store {
           }
           absencesMap[pairKey].push({
             session: parseInt(session),
-            type: val === "A" ? "Vắng không phép" : "Vắng có phép"
+            type: val === "A" ? "Vắng không phép" : "Vắng có phép",
+            code: val
           });
         }
       }
     }
 
-    // Merge or create makeup entries
+    // Keep manual entries that don't match any student/class in attendance
+    const existingManuals = (this.makeup || []).filter(m => m.studentId && m.studentId.startsWith("manual-"));
+    const updatedMakeupList = [];
+
+    // Process every (classCode, studentId) pair that has actual absences
     for (const [pairKey, absList] of Object.entries(absencesMap)) {
       const [classCode, studentId] = pairKey.split("__");
       const student = this.students.find(s => s.id === studentId);
@@ -141,35 +146,31 @@ class Store {
 
       absList.sort((a, b) => a.session - b.session);
 
-      let record = this.makeup.find(m => m.studentId === studentId && m.classCode === classCode);
-      if (!record) {
-        record = {
-          id: "mk-" + Date.now() + "-" + Math.random().toString(36).substr(2, 4),
-          studentId: studentId,
-          studentName: student.fullName,
-          classCode: classCode,
-          absent1Date: `Buổi ${absList[0].session} (${absList[0].type})`,
-          absent1SentDoc: false,
-          absent1Schedule: "",
-          absent1Status: "Chưa bù",
-          absent2Date: absList[1] ? `Buổi ${absList[1].session} (${absList[1].type})` : "",
-          absent2SentDoc: false,
-          absent2Schedule: "",
-          absent2Status: absList[1] ? "Chưa bù" : "",
-          csNotes: ""
-        };
-        this.makeup.push(record);
-      } else {
-        record.studentName = student.fullName;
-        if (!record.absent1Date) {
-          record.absent1Date = `Buổi ${absList[0].session} (${absList[0].type})`;
-        }
-        if (absList[1] && !record.absent2Date) {
-          record.absent2Date = `Buổi ${absList[1].session} (${absList[1].type})`;
-          if (!record.absent2Status) record.absent2Status = "Chưa bù";
-        }
-      }
+      const existingRecord = (this.makeup || []).find(m => m.studentId === studentId && m.classCode === classCode);
+
+      const rec = {
+        id: existingRecord?.id || ("mk-" + Date.now() + "-" + Math.random().toString(36).substr(2, 4)),
+        studentId: studentId,
+        studentName: student.fullName,
+        classCode: classCode,
+        absent1Date: `Buổi ${absList[0].session} (${absList[0].type})`,
+        absent1Type: absList[0].code,
+        absent1SentDoc: existingRecord ? existingRecord.absent1SentDoc : false,
+        absent1Schedule: existingRecord ? (existingRecord.absent1Schedule || "") : "",
+        absent1Status: existingRecord ? (existingRecord.absent1Status || "Chưa bù") : "Chưa bù",
+        absent2Date: absList[1] ? `Buổi ${absList[1].session} (${absList[1].type})` : "",
+        absent2Type: absList[1] ? absList[1].code : "",
+        absent2SentDoc: existingRecord && absList[1] ? existingRecord.absent2SentDoc : false,
+        absent2Schedule: existingRecord && absList[1] ? (existingRecord.absent2Schedule || "") : "",
+        absent2Status: absList[1] ? (existingRecord?.absent2Status || "Chưa bù") : "",
+        csNotes: existingRecord ? (existingRecord.csNotes || "") : ""
+      };
+
+      updatedMakeupList.push(rec);
     }
+
+    // Combine updated sync records with manual records
+    this.makeup = [...updatedMakeupList, ...existingManuals];
   }
 }
 
@@ -723,6 +724,8 @@ class App {
       document.getElementById("student-trackCategory").value = s.trackCategory;
       document.getElementById("student-studyFormat").value = s.studyFormat;
       document.getElementById("student-status").value = s.status;
+      const startSessInput = document.getElementById("student-startSession");
+      if (startSessInput) startSessInput.value = s.startSession || 1;
 
       // Check assigned classes
       const assignedClasses = Array.isArray(s.classCodes) && s.classCodes.length > 0
@@ -734,6 +737,8 @@ class App {
     } else {
       title.textContent = "Thêm Học Viên Mới";
       document.getElementById("student-id").value = "";
+      const startSessInputNew = document.getElementById("student-startSession");
+      if (startSessInputNew) startSessInputNew.value = 1;
 
       // Restore unsaved draft if previously exited without saving
       try {
@@ -748,6 +753,8 @@ class App {
           if (draft.trackCategory) document.getElementById("student-trackCategory").value = draft.trackCategory;
           if (draft.studyFormat) document.getElementById("student-studyFormat").value = draft.studyFormat;
           if (draft.status) document.getElementById("student-status").value = draft.status;
+          const startSessInput = document.getElementById("student-startSession");
+          if (startSessInput && draft.startSession) startSessInput.value = draft.startSession;
 
           const draftClasses = Array.isArray(draft.classCodes) 
             ? draft.classCodes 
@@ -774,6 +781,8 @@ class App {
       return;
     }
 
+    const startSessionVal = parseInt(document.getElementById("student-startSession")?.value) || 1;
+
     const studentData = {
       fullName: document.getElementById("student-fullName").value.trim(),
       phone: document.getElementById("student-phone").value.trim(),
@@ -781,6 +790,7 @@ class App {
       email: document.getElementById("student-email").value.trim(),
       courseTrack: document.getElementById("student-courseTrack").value.trim(),
       currentModule: document.getElementById("student-currentModule").value.trim(),
+      startSession: startSessionVal,
       trackCategory: document.getElementById("student-trackCategory").value,
       classCodes: selectedClasses,
       classCode: selectedClasses.join(", "),
@@ -1151,8 +1161,19 @@ class App {
     this.tbodyAttendance.innerHTML = classStudents.map((s, idx) => {
       let absentCount = 0;
       let sessionCells = "";
+      const startSess = s.startSession ? parseInt(s.startSession) : 1;
 
       for (let sess = 1; sess <= 14; sess++) {
+        // If student joined midway after this session
+        if (sess < startSess) {
+          sessionCells += `
+            <td class="att-cell att-state-not-joined" title="Học viên vào lớp từ buổi ${startSess} (chưa vào lớp ở buổi ${sess})">
+              <span style="font-size: 0.7rem; color: #94a3b8; font-weight: 600;">Chưa vào</span>
+            </td>
+          `;
+          continue;
+        }
+
         const key = this.store.getAttKey(classCode, s.id, sess);
         const status = this.store.attendance[key] || "";
 
@@ -1200,6 +1221,12 @@ class App {
   }
 
   cycleAttendanceState(classCode, studentId, session) {
+    const student = this.store.students.find(s => s.id === studentId);
+    if (student && student.startSession && session < parseInt(student.startSession)) {
+      this.showToast(`Học viên ${student.fullName} vào lớp từ buổi ${student.startSession}, không thể điểm danh buổi ${session}!`, "warning");
+      return;
+    }
+
     const key = this.store.getAttKey(classCode, studentId, session);
     const curState = this.store.attendance[key] || "";
     let nextState = "";
@@ -1270,6 +1297,13 @@ class App {
     }
 
     this.tbodyMakeup.innerHTML = filtered.map((m, idx) => {
+      // Determine badge colors based on absent type
+      const isAbsent1Excused = m.absent1Type === "E" || (m.absent1Date && m.absent1Date.includes("có phép"));
+      const badge1Class = isAbsent1Excused ? "badge-excused" : "badge-absent";
+
+      const isAbsent2Excused = m.absent2Type === "E" || (m.absent2Date && m.absent2Date.includes("có phép"));
+      const badge2Class = isAbsent2Excused ? "badge-excused" : "badge-absent";
+
       return `
         <tr data-makeup-id="${m.id}">
           <td class="col-num sticky-col">${idx + 1}</td>
@@ -1278,7 +1312,7 @@ class App {
 
           <!-- Đợt vắng 1 -->
           <td>
-            <span class="badge badge-drop">${m.absent1Date || '-'}</span>
+            <span class="badge ${badge1Class}">${m.absent1Date || '-'}</span>
           </td>
           <td class="checkbox-center">
             <input type="checkbox" class="custom-checkbox" ${m.absent1SentDoc ? 'checked' : ''}
@@ -1298,7 +1332,7 @@ class App {
 
           <!-- Đợt vắng 2 -->
           <td>
-            ${m.absent2Date ? `<span class="badge badge-drop">${m.absent2Date}</span>` : '<span style="color:#cbd5e1;">-</span>'}
+            ${m.absent2Date ? `<span class="badge ${badge2Class}">${m.absent2Date}</span>` : '<span style="color:#cbd5e1;">-</span>'}
           </td>
           <td class="checkbox-center">
             ${m.absent2Date ? `

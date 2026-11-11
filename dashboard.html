@@ -686,6 +686,10 @@
               <input type="text" id="student-currentModule">
             </div>
             <div class="form-group">
+              <label>Bắt đầu học từ buổi mấy? (Mặc định: Buổi 1)</label>
+              <input type="number" id="student-startSession" min="1" max="14" value="1" placeholder="Nhập số buổi (1 - 14)">
+            </div>
+            <div class="form-group">
               <label>Hình thức học *</label>
               <select id="student-studyFormat" required>
                 <option value="Offline">Offline</option>
@@ -973,7 +977,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=20261110_02"></script>
+  <script src="app.js?v=20261111_01"></script>
 
 </body>
 </html>

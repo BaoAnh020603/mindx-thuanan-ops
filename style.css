@@ -947,6 +947,12 @@ th.sticky-col, th.sticky-col-2 {
 .att-state-absent  { background-color: #ef4444 !important; color: white !important; }
 .att-state-excused { background-color: #3b82f6 !important; color: white !important; }
 .att-state-empty   { background-color: #ffffff; color: #cbd5e1; }
+.att-state-not-joined {
+  background-color: #f1f5f9 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  opacity: 0.85;
+}
 
 .att-count-badge {
   font-weight: 800;
