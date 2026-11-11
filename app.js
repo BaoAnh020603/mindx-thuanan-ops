@@ -1251,7 +1251,6 @@ class App {
 
     document.getElementById("badge-makeup-count").textContent = this.store.makeup.length;
 
-    const student = this.store.students.find(s => s.id === studentId);
     const label = nextState === "P" ? "Có mặt (P)" :
                   nextState === "L" ? "Đi trễ (L)" :
                   nextState === "A" ? "Vắng không phép (A) -> Đã chuyển sang Học Bù!" :
