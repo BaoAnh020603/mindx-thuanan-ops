@@ -150,19 +150,6 @@ Tracks tuition freeze contracts, policy deadlines, and reactivation outreach.
 
 ---
 
-### 7. Identity & Authentication System
-
-* **Automated Identity Recognition**:
-  - Entering staff code `14049` (password `MindX@2024`) automatically resolves to **Trần Thị Thảo Vy**.
-  - Header pill displays: `ROLE: CS | Trần Thị Thảo Vy`.
-  - Welcome notification: `Chào Trần Thị Thảo Vy, chúc bạn một ngày làm việc hiệu quả tại MindX!`.
-  - Logout notification: `Tạm biệt Trần Thị Thảo Vy, bạn đã đăng xuất thành công khỏi hệ thống!`.
-* **Role-Based Access**:
-  - `CS (Customer Support / Giáo vụ)`: Daily operations, class schedules, attendance, make-up classes, reservations.
-  - `Admin (Quản lý)`: Elevated campus-wide administrative control.
-
----
-
 ## 🛡️ Enterprise Data Safety (Zero-Loss Architecture)
 
 Built specifically to protect administrative work during busy shifts:
