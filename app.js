@@ -36,6 +36,50 @@ class Store {
 
     // Sync makeup table with attendance absences on initial load
     this.syncMakeupFromAttendance();
+    this.syncWaitingFromStudents();
+  }
+
+  // Auto sync students with status "Chờ lớp New" or "Chờ lớp Level Up" to waiting list
+  syncWaitingFromStudents() {
+    if (!this.waiting) this.waiting = [];
+    const waitingStudents = (this.students || []).filter(s => s.status === "Chờ lớp New" || s.status === "Chờ lớp Level Up");
+
+    for (const s of waitingStudents) {
+      const existing = this.waiting.find(w => 
+        (w.studentId && w.studentId === s.id) ||
+        (s.phone && w.phone === s.phone) ||
+        (w.fullName && w.fullName.toLowerCase() === s.fullName.toLowerCase())
+      );
+      const waitingType = s.status === "Chờ lớp New" ? "Chờ lớp New" : "Chờ lớp Level Up";
+
+      if (existing) {
+        existing.type = waitingType;
+        existing.studentId = s.id;
+        existing.fullName = s.fullName;
+        if (s.phone) existing.phone = s.phone;
+        if (s.parentName) existing.parentName = s.parentName;
+        if (s.email) existing.email = s.email;
+        if (s.courseTrack) existing.courseTrack = s.courseTrack;
+        if (s.currentModule) existing.subject = s.currentModule;
+      } else {
+        this.waiting.push({
+          id: "wt-" + Date.now() + "-" + Math.random().toString(36).substr(2, 4),
+          studentId: s.id,
+          type: waitingType,
+          fullName: s.fullName,
+          phone: s.phone || "",
+          parentName: s.parentName || "",
+          email: s.email || "",
+          courseTrack: s.courseTrack || "",
+          subject: s.currentModule || "pre",
+          startDate: "",
+          endDate: "",
+          status: "Đang đợi lớp",
+          timeCategory: "Học viên đã Chờ 1 - 2 tuần",
+          note: `Tự động đồng bộ từ Tab 1 khi học viên có trạng thái "${s.status}"`
+        });
+      }
+    }
   }
 
   load(key, fallback) {
@@ -103,7 +147,7 @@ class Store {
     return this.students.filter(s => {
       const inClass = (Array.isArray(s.classCodes) && s.classCodes.includes(classCode)) ||
                       (typeof s.classCode === "string" && s.classCode.split(",").map(x => x.trim()).includes(classCode));
-      return inClass && (s.status === "Active" || s.status === "Sắp hết phí");
+      return inClass && (s.status === "Active" || s.status === "Sắp hết phí" || s.status === "Hết phí");
     }).length;
   }
 
@@ -595,20 +639,46 @@ class App {
     const total = this.store.students.length;
     const active = this.store.students.filter(s => s.status === "Active").length;
     const expiring = this.store.students.filter(s => s.status === "Sắp hết phí").length;
-    const handle = this.store.students.filter(s => s.status === "Handle").length;
+    const expired = this.store.students.filter(s => s.status === "Hết phí").length;
+    const drop = this.store.students.filter(s => s.status === "Nghỉ ngang").length;
+    const waitingNew = this.store.students.filter(s => s.status === "Chờ lớp New").length;
+    const waitingLevelUp = this.store.students.filter(s => s.status === "Chờ lớp Level Up").length;
     const reserve = this.store.students.filter(s => s.status === "Bảo lưu").length;
     const transferB = this.store.students.filter(s => s.status === "Chuyển cơ sở").length;
     const transferS = this.store.students.filter(s => s.status === "Chuyển nhượng").length;
-    const drop = this.store.students.filter(s => s.status === "Nghỉ ngang").length;
 
-    document.getElementById("metric-total-students").textContent = total;
-    document.getElementById("metric-active-students").textContent = active;
-    document.getElementById("metric-expiring-students").textContent = expiring;
-    document.getElementById("metric-handle-students").textContent = handle;
-    document.getElementById("metric-reserve-students").textContent = reserve;
-    document.getElementById("metric-transfer-branch-students").textContent = transferB;
-    document.getElementById("metric-transfer-student-students").textContent = transferS;
-    document.getElementById("metric-drop-students").textContent = drop;
+    // Handle is total students
+    const elHandle = document.getElementById("metric-handle-students");
+    if (elHandle) elHandle.textContent = total;
+    const elTotal = document.getElementById("metric-total-students");
+    if (elTotal) elTotal.textContent = total;
+
+    const elActive = document.getElementById("metric-active-students");
+    if (elActive) elActive.textContent = active;
+
+    const elExpiring = document.getElementById("metric-expiring-students");
+    if (elExpiring) elExpiring.textContent = expiring;
+
+    const elExpired = document.getElementById("metric-expired-students");
+    if (elExpired) elExpired.textContent = expired;
+
+    const elDrop = document.getElementById("metric-drop-students");
+    if (elDrop) elDrop.textContent = drop;
+
+    const elWaitNew = document.getElementById("metric-waiting-new-students");
+    if (elWaitNew) elWaitNew.textContent = waitingNew;
+
+    const elWaitLevelUp = document.getElementById("metric-waiting-levelup-students");
+    if (elWaitLevelUp) elWaitLevelUp.textContent = waitingLevelUp;
+
+    const elReserve = document.getElementById("metric-reserve-students");
+    if (elReserve) elReserve.textContent = reserve;
+
+    const elTransferB = document.getElementById("metric-transfer-branch-students");
+    if (elTransferB) elTransferB.textContent = transferB;
+
+    const elTransferS = document.getElementById("metric-transfer-student-students");
+    if (elTransferS) elTransferS.textContent = transferS;
 
     this.studentsTableCount.textContent = `Hiển thị ${filtered.length} / ${total} học viên`;
 
@@ -628,7 +698,10 @@ class App {
 
       let statusColorClass = "student-status-active";
       if (s.status === "Sắp hết phí") statusColorClass = "student-status-expiring";
+      else if (s.status === "Hết phí") statusColorClass = "student-status-expired";
       else if (s.status === "Handle") statusColorClass = "student-status-handle";
+      else if (s.status === "Chờ lớp New") statusColorClass = "student-status-waiting-new";
+      else if (s.status === "Chờ lớp Level Up") statusColorClass = "student-status-waiting-levelup";
       else if (s.status === "Bảo lưu") statusColorClass = "student-status-reserve";
       else if (s.status === "Chuyển cơ sở") statusColorClass = "student-status-transfer-branch";
       else if (s.status === "Chuyển nhượng") statusColorClass = "student-status-transfer-student";
@@ -650,13 +723,15 @@ class App {
           <td>${s.studyFormat}</td>
           <td>
             <select class="filter-select student-status-select ${statusColorClass}" onchange="app.changeStudentStatus('${s.id}', this.value)">
-              <option value="Active" ${s.status === 'Active' ? 'selected' : ''}>Active</option>
+              <option value="Active" ${s.status === 'Active' ? 'selected' : ''}>Active (Đang học)</option>
               <option value="Sắp hết phí" ${s.status === 'Sắp hết phí' ? 'selected' : ''}>Sắp hết phí</option>
-              <option value="Handle" ${s.status === 'Handle' ? 'selected' : ''}>Handle</option>
+              <option value="Hết phí" ${s.status === 'Hết phí' ? 'selected' : ''}>Hết phí</option>
+              <option value="Nghỉ ngang" ${s.status === 'Nghỉ ngang' ? 'selected' : ''}>Nghỉ ngang (Chưa hết lộ trình)</option>
+              <option value="Chờ lớp New" ${s.status === 'Chờ lớp New' ? 'selected' : ''}>Chờ lớp New (Học viên mới)</option>
+              <option value="Chờ lớp Level Up" ${s.status === 'Chờ lớp Level Up' ? 'selected' : ''}>Chờ lớp Level Up (Chờ học phần mới)</option>
               <option value="Bảo lưu" ${s.status === 'Bảo lưu' ? 'selected' : ''}>Bảo lưu</option>
               <option value="Chuyển cơ sở" ${s.status === 'Chuyển cơ sở' ? 'selected' : ''}>Chuyển cơ sở</option>
               <option value="Chuyển nhượng" ${s.status === 'Chuyển nhượng' ? 'selected' : ''}>Chuyển nhượng</option>
-              <option value="Nghỉ ngang" ${s.status === 'Nghỉ ngang' ? 'selected' : ''}>Nghỉ ngang</option>
             </select>
           </td>
           <td class="col-actions">
@@ -672,10 +747,65 @@ class App {
     if (window.lucide) window.lucide.createIcons();
   }
 
+  syncStudentToWaiting(student, status) {
+    if (!student) return;
+    if (status !== "Chờ lớp New" && status !== "Chờ lớp Level Up") return;
+
+    if (!this.store.waiting) this.store.waiting = [];
+
+    // Check if student already in waiting list (by studentId or phone or fullName)
+    const existing = this.store.waiting.find(w => 
+      (w.studentId && w.studentId === student.id) ||
+      (student.phone && w.phone === student.phone) ||
+      (w.fullName && w.fullName.toLowerCase() === student.fullName.toLowerCase())
+    );
+
+    const waitingType = status === "Chờ lớp New" ? "Chờ lớp New" : "Chờ lớp Level Up";
+
+    if (existing) {
+      existing.type = waitingType;
+      existing.fullName = student.fullName;
+      existing.phone = student.phone || existing.phone;
+      existing.parentName = student.parentName || existing.parentName;
+      existing.email = student.email || existing.email;
+      existing.courseTrack = student.courseTrack || existing.courseTrack;
+      existing.subject = student.currentModule || existing.subject;
+      existing.studentId = student.id;
+    } else {
+      const newWaiting = {
+        id: "wt-" + Date.now() + "-" + Math.random().toString(36).substr(2, 4),
+        studentId: student.id,
+        type: waitingType,
+        fullName: student.fullName,
+        phone: student.phone || "",
+        parentName: student.parentName || "",
+        email: student.email || "",
+        courseTrack: student.courseTrack || "",
+        subject: student.currentModule || "pre",
+        startDate: "",
+        endDate: "",
+        status: "Đang đợi lớp",
+        timeCategory: "Học viên đã Chờ 1 - 2 tuần",
+        note: `Tự động đồng bộ từ Tab 1 khi học viên có trạng thái "${status}"`
+      };
+      this.store.waiting.unshift(newWaiting);
+    }
+    this.renderWaiting();
+    if (document.getElementById("badge-waiting-count")) {
+      document.getElementById("badge-waiting-count").textContent = this.store.waiting.length;
+    }
+  }
+
   changeStudentStatus(studentId, newStatus) {
     const student = this.store.students.find(s => s.id === studentId);
     if (student) {
       student.status = newStatus;
+
+      // Auto sync to Tab 5 (Chờ lớp) if status is Chờ lớp New or Chờ lớp Level Up
+      if (newStatus === "Chờ lớp New" || newStatus === "Chờ lớp Level Up") {
+        this.syncStudentToWaiting(student, newStatus);
+      }
+
       this.store.save();
       this.renderStudents();
       this.renderClasses();
@@ -802,6 +932,7 @@ class App {
       const index = this.store.students.findIndex(s => s.id === id);
       if (index !== -1) {
         this.store.students[index] = { ...this.store.students[index], ...studentData };
+        this.syncStudentToWaiting(this.store.students[index], studentData.status);
         this.showToast("Cập nhật học viên thành công!");
       }
     } else {
@@ -810,6 +941,7 @@ class App {
         ...studentData
       };
       this.store.students.unshift(newStudent);
+      this.syncStudentToWaiting(newStudent, studentData.status);
       this.showToast("Thêm học viên mới thành công!");
       // Clear draft on successful creation
       localStorage.removeItem("mx_ta_draft_student");

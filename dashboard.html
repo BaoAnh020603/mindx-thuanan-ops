@@ -145,15 +145,15 @@
 
       <!-- ================= TAB 1: QUẢN LÝ HỌC VIÊN ================= -->
       <section id="tab-students" class="tab-content-panel active">
-        <!-- Summary metrics cards -->
+        <!-- Summary metrics cards (10 Nhóm chỉ số phân loại theo yêu cầu quản lý vận hành) -->
         <div class="metrics-grid">
           <div class="metric-card metric-primary">
-            <div class="metric-label">Tổng học viên</div>
-            <div class="metric-value" id="metric-total-students">0</div>
-            <div class="metric-sub">Toàn cơ sở Thuận An</div>
+            <div class="metric-label">Handle</div>
+            <div class="metric-value" id="metric-handle-students">0</div>
+            <div class="metric-sub">Tổng số học viên</div>
           </div>
           <div class="metric-card metric-success">
-            <div class="metric-label">Tổng Active</div>
+            <div class="metric-label">Active</div>
             <div class="metric-value" id="metric-active-students">0</div>
             <div class="metric-sub text-success">Đang theo học</div>
           </div>
@@ -162,10 +162,25 @@
             <div class="metric-value" id="metric-expiring-students">0</div>
             <div class="metric-sub text-warning">Cần CS tái tục</div>
           </div>
+          <div class="metric-card metric-danger">
+            <div class="metric-label">Hết phí</div>
+            <div class="metric-value" id="metric-expired-students">0</div>
+            <div class="metric-sub text-danger">Đã hết số buổi</div>
+          </div>
+          <div class="metric-card metric-danger">
+            <div class="metric-label">Nghỉ ngang</div>
+            <div class="metric-value" id="metric-drop-students">0</div>
+            <div class="metric-sub text-danger">Chưa hết lộ trình</div>
+          </div>
           <div class="metric-card metric-info">
-            <div class="metric-label">Handle</div>
-            <div class="metric-value" id="metric-handle-students">0</div>
-            <div class="metric-sub text-info">Đang xử lý / tuyển sinh</div>
+            <div class="metric-label">Chờ lớp New</div>
+            <div class="metric-value" id="metric-waiting-new-students">0</div>
+            <div class="metric-sub text-info">Học viên mới</div>
+          </div>
+          <div class="metric-card metric-info">
+            <div class="metric-label">Chờ lớp Level Up</div>
+            <div class="metric-value" id="metric-waiting-levelup-students">0</div>
+            <div class="metric-sub text-info">Chờ học phần mới</div>
           </div>
           <div class="metric-card metric-neutral">
             <div class="metric-label">Bảo lưu</div>
@@ -182,11 +197,6 @@
             <div class="metric-value" id="metric-transfer-student-students">0</div>
             <div class="metric-sub">Nhượng suất học</div>
           </div>
-          <div class="metric-card metric-danger">
-            <div class="metric-label">Nghỉ ngang</div>
-            <div class="metric-value" id="metric-drop-students">0</div>
-            <div class="metric-sub text-danger">Ngưng lộ trình</div>
-          </div>
         </div>
 
         <!-- Filter bar -->
@@ -199,13 +209,15 @@
             <div class="filter-group">
               <select id="filter-student-status" class="filter-select">
                 <option value="">-- Tất cả trạng thái --</option>
-                <option value="Active">Active</option>
+                <option value="Active">Active (Đang học)</option>
                 <option value="Sắp hết phí">Sắp hết phí</option>
-                <option value="Handle">Handle</option>
+                <option value="Hết phí">Hết phí</option>
+                <option value="Nghỉ ngang">Nghỉ ngang</option>
+                <option value="Chờ lớp New">Chờ lớp New</option>
+                <option value="Chờ lớp Level Up">Chờ lớp Level Up</option>
                 <option value="Bảo lưu">Bảo lưu</option>
                 <option value="Chuyển cơ sở">Chuyển cơ sở</option>
                 <option value="Chuyển nhượng">Chuyển nhượng</option>
-                <option value="Nghỉ ngang">Nghỉ ngang</option>
               </select>
 
               <select id="filter-student-track" class="filter-select">
@@ -700,13 +712,15 @@
             <div class="form-group">
               <label>Trạng thái học viên *</label>
               <select id="student-status" required>
-                <option value="Active">Active</option>
+                <option value="Active">Active (Đang học)</option>
                 <option value="Sắp hết phí">Sắp hết phí</option>
-                <option value="Handle">Handle</option>
+                <option value="Hết phí">Hết phí</option>
+                <option value="Nghỉ ngang">Nghỉ ngang (Chưa hết lộ trình)</option>
+                <option value="Chờ lớp New">Chờ lớp New (Học viên mới)</option>
+                <option value="Chờ lớp Level Up">Chờ lớp Level Up (Chờ học phần mới)</option>
                 <option value="Bảo lưu">Bảo lưu</option>
                 <option value="Chuyển cơ sở">Chuyển cơ sở</option>
                 <option value="Chuyển nhượng">Chuyển nhượng</option>
-                <option value="Nghỉ ngang">Nghỉ ngang</option>
               </select>
             </div>
           </div>
@@ -977,7 +991,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=20261111_01"></script>
+  <script src="app.js?v=20261111_02"></script>
 
 </body>
 </html>

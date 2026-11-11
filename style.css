@@ -382,10 +382,16 @@ body {
 /* ================= 5. METRIC CARDS ================= */
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 6px;
   margin-bottom: 12px;
   width: 100%;
+}
+
+@media (max-width: 1400px) {
+  .metrics-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
 
 .metrics-grid-classes {
@@ -663,10 +669,28 @@ body {
   border: 1px solid #fcd34d !important;
 }
 
+.student-status-expired {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+  border: 1px solid #f87171 !important;
+}
+
 .student-status-handle {
   background-color: #ffedd5 !important;
   color: #c2410c !important;
   border: 1px solid #fdba74 !important;
+}
+
+.student-status-waiting-new {
+  background-color: #f0fdf4 !important;
+  color: #15803d !important;
+  border: 1px solid #86efac !important;
+}
+
+.student-status-waiting-levelup {
+  background-color: #ecfeff !important;
+  color: #0e7490 !important;
+  border: 1px solid #67e8f9 !important;
 }
 
 .student-status-reserve {
