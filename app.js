@@ -4,6 +4,11 @@
  * No placeholder hints in inputs
  */
 
+// Helper: Get standard default minimum capacity for a class
+function getDefaultClassCapacity(trackCategory) {
+  return trackCategory === "Robotics" ? 6 : 7;
+}
+
 // Blank initial datasets
 const INITIAL_CLASSES = [];
 const INITIAL_STUDENTS = [];
@@ -1088,7 +1093,7 @@ class App {
       const matchTrack = !trackFilter || c.trackCategory === trackFilter;
 
       const activeCount = this.store.getClassActiveCount(c.classCode);
-      const targetCapacity = c.maxCapacity ? parseInt(c.maxCapacity) : 6;
+      const targetCapacity = c.maxCapacity ? parseInt(c.maxCapacity) : getDefaultClassCapacity(c.trackCategory);
       const isFull = activeCount >= targetCapacity;
       let matchCapacity = true;
       if (capacityFilter === "Đủ sĩ số") matchCapacity = isFull;
@@ -1102,7 +1107,7 @@ class App {
     const pending = this.store.classes.filter(c => c.status === "Chờ lớp").length;
     const finished = this.store.classes.filter(c => c.status === "Finished").length;
     const full = this.store.classes.filter(c => {
-      const target = c.maxCapacity ? parseInt(c.maxCapacity) : 6;
+      const target = c.maxCapacity ? parseInt(c.maxCapacity) : getDefaultClassCapacity(c.trackCategory);
       return this.store.getClassActiveCount(c.classCode) >= target;
     }).length;
     const low = total - full;
@@ -1123,7 +1128,7 @@ class App {
 
     this.tbodyClasses.innerHTML = filtered.map((c, idx) => {
       const activeCount = this.store.getClassActiveCount(c.classCode);
-      const targetCapacity = c.maxCapacity ? parseInt(c.maxCapacity) : 6;
+      const targetCapacity = c.maxCapacity ? parseInt(c.maxCapacity) : getDefaultClassCapacity(c.trackCategory);
       const isFull = activeCount >= targetCapacity;
       const capacityBadge = isFull
         ? `<span class="badge badge-full">Đủ sĩ số (${activeCount}/${targetCapacity})</span>`
@@ -1192,6 +1197,17 @@ class App {
     const form = this.formClass;
     form.reset();
 
+    const trackInput = document.getElementById("class-trackCategory");
+    const capacityInput = document.getElementById("class-maxCapacity");
+    if (trackInput && capacityInput) {
+      trackInput.addEventListener("change", () => {
+        const isEditing = !!this.formClass.dataset.classId;
+        if (!isEditing || !capacityInput.value) {
+          capacityInput.value = getDefaultClassCapacity(trackInput.value);
+        }
+      });
+    }
+
     if (classId) {
       const c = this.store.classes.find(item => item.id === classId);
       if (!c) return;
@@ -1200,7 +1216,7 @@ class App {
       document.getElementById("class-trackCategory").value = c.trackCategory;
       document.getElementById("class-classCode").value = c.classCode;
       document.getElementById("class-studyFormat").value = c.studyFormat;
-      document.getElementById("class-maxCapacity").value = c.maxCapacity || "";
+      document.getElementById("class-maxCapacity").value = c.maxCapacity || getDefaultClassCapacity(c.trackCategory);
       document.getElementById("class-schedule").value = c.schedule || "";
       document.getElementById("class-startDate").value = c.startDate || "";
       document.getElementById("class-cp1Date").value = c.cp1Date || "";
@@ -1213,6 +1229,10 @@ class App {
     } else {
       title.textContent = "Thêm Lớp Học Mới";
       delete form.dataset.classId;
+
+      // Default capacity based on initial track
+      const initialTrack = document.getElementById("class-trackCategory")?.value || "Coding";
+      document.getElementById("class-maxCapacity").value = getDefaultClassCapacity(initialTrack);
 
       // Restore unsaved draft if previously exited without saving
       try {
@@ -1241,11 +1261,12 @@ class App {
   handleClassSubmit(e) {
     e.preventDefault();
     const classId = this.formClass.dataset.classId;
+    const classTrack = document.getElementById("class-trackCategory").value;
     const classData = {
-      trackCategory: document.getElementById("class-trackCategory").value,
+      trackCategory: classTrack,
       classCode: document.getElementById("class-classCode").value.trim(),
       studyFormat: document.getElementById("class-studyFormat").value,
-      maxCapacity: document.getElementById("class-maxCapacity").value ? parseInt(document.getElementById("class-maxCapacity").value) : 6,
+      maxCapacity: document.getElementById("class-maxCapacity").value ? parseInt(document.getElementById("class-maxCapacity").value) : getDefaultClassCapacity(classTrack),
       schedule: document.getElementById("class-schedule").value.trim(),
       startDate: document.getElementById("class-startDate").value,
       cp1Date: document.getElementById("class-cp1Date").value,
@@ -1346,7 +1367,7 @@ class App {
 
     if (curClass) {
       const activeCount = this.store.getClassActiveCount(classCode);
-      const targetCapacity = curClass.maxCapacity ? parseInt(curClass.maxCapacity) : 6;
+      const targetCapacity = curClass.maxCapacity ? parseInt(curClass.maxCapacity) : getDefaultClassCapacity(curClass.trackCategory);
       const trackBadge = curClass.trackCategory === "Coding" ? "badge-coding" : "badge-robotics";
       const cpNote = isRobotics 
         ? "🤖 <b>Robotics:</b> CP1 (Buổi 4) | CP2 (Buổi 8) | Demo (Buổi 14)" 
@@ -2063,7 +2084,7 @@ class App {
 
     const wsClassesData = this.store.classes.map((c, idx) => {
       const activeCount = this.store.getClassActiveCount(c.classCode);
-      const targetCapacity = c.maxCapacity ? parseInt(c.maxCapacity) : 6;
+      const targetCapacity = c.maxCapacity ? parseInt(c.maxCapacity) : getDefaultClassCapacity(c.trackCategory);
       return {
         "STT": idx + 1,
         "Mã khối": c.trackCategory,
