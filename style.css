@@ -894,6 +894,12 @@ th.sticky-col-2 {
   color: #15803d;
 }
 
+.badge-over {
+  background-color: #ffedd5;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
 .badge-low {
   background-color: #fee2e2;
   color: #dc2626;

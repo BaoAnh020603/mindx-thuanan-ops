@@ -1094,10 +1094,10 @@ class App {
 
       const activeCount = this.store.getClassActiveCount(c.classCode);
       const targetCapacity = c.maxCapacity ? parseInt(c.maxCapacity) : getDefaultClassCapacity(c.trackCategory);
-      const isFull = activeCount >= targetCapacity;
       let matchCapacity = true;
-      if (capacityFilter === "Đủ sĩ số") matchCapacity = isFull;
-      if (capacityFilter === "Thiếu sĩ số") matchCapacity = !isFull;
+      if (capacityFilter === "Đủ sĩ số") matchCapacity = activeCount === targetCapacity;
+      if (capacityFilter === "Vượt sĩ số") matchCapacity = activeCount > targetCapacity;
+      if (capacityFilter === "Thiếu sĩ số") matchCapacity = activeCount < targetCapacity;
 
       return matchQuery && matchStatus && matchTrack && matchCapacity;
     });
@@ -1129,10 +1129,14 @@ class App {
     this.tbodyClasses.innerHTML = filtered.map((c, idx) => {
       const activeCount = this.store.getClassActiveCount(c.classCode);
       const targetCapacity = c.maxCapacity ? parseInt(c.maxCapacity) : getDefaultClassCapacity(c.trackCategory);
-      const isFull = activeCount >= targetCapacity;
-      const capacityBadge = isFull
-        ? `<span class="badge badge-full">Đủ sĩ số (${activeCount}/${targetCapacity})</span>`
-        : `<span class="badge badge-low">Thiếu sĩ số (${activeCount}/${targetCapacity})</span>`;
+      let capacityBadge = "";
+      if (activeCount > targetCapacity) {
+        capacityBadge = `<span class="badge badge-over">Vượt sĩ số (${activeCount}/${targetCapacity})</span>`;
+      } else if (activeCount === targetCapacity) {
+        capacityBadge = `<span class="badge badge-full">Đủ sĩ số (${activeCount}/${targetCapacity})</span>`;
+      } else {
+        capacityBadge = `<span class="badge badge-low">Thiếu sĩ số (${activeCount}/${targetCapacity})</span>`;
+      }
 
       const trackBadge = c.trackCategory === "Coding" ? "badge-coding" : "badge-robotics";
       const statusClass = c.status === "Running"
@@ -2092,7 +2096,7 @@ class App {
         "Mô hình học": c.studyFormat,
         "Sĩ số mục tiêu": targetCapacity,
         "Sĩ số hiện tại": activeCount,
-        "Tình trạng sĩ số": activeCount >= targetCapacity ? "Đủ sĩ số" : "Thiếu sĩ số",
+        "Tình trạng sĩ số": activeCount > targetCapacity ? "Vượt sĩ số" : (activeCount === targetCapacity ? "Đủ sĩ số" : "Thiếu sĩ số"),
         "Lịch học": c.schedule,
         "Ngày khai giảng": formatDateVN(c.startDate),
         "Ngày CP1": formatDateVN(c.cp1Date),
