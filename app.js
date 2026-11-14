@@ -196,12 +196,12 @@ class Store {
     this.save();
   }
 
-  // Calculate dynamic capacity for a class based on active students
+  // Calculate dynamic capacity for a class based on enrolled students
   getClassActiveCount(classCode) {
     return this.students.filter(s => {
       const inClass = (Array.isArray(s.classCodes) && s.classCodes.includes(classCode)) ||
                       (typeof s.classCode === "string" && s.classCode.split(",").map(x => x.trim()).includes(classCode));
-      return inClass && (s.status === "Active" || s.status === "Sắp hết phí" || s.status === "Hết phí");
+      return inClass;
     }).length;
   }
 
